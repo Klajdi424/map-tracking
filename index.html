@@ -8,6 +8,10 @@
         function initMap() {
             const params = new URLSearchParams(window.location.search);
 
+            const driver = { 
+                lat: parseFloat(params.get('driverLat')), 
+                lng: parseFloat(params.get('driverLng')) 
+            };
             const pickup = { 
                 lat: parseFloat(params.get('pickupLat')), 
                 lng: parseFloat(params.get('pickupLng')) 
@@ -16,18 +20,15 @@
                 lat: parseFloat(params.get('dropoffLat')), 
                 lng: parseFloat(params.get('dropoffLng')) 
             };
-            const driver = { 
-                lat: parseFloat(params.get('driverLat')), 
-                lng: parseFloat(params.get('driverLng')) 
-            };
 
             const map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 15,
                 center: pickup
             });
 
+            new google.maps.Marker({ position: driver, map, label: "D" });
             new google.maps.Marker({ position: pickup, map, label: "P" });
-            new google.maps.Marker({ position: dropoff, map, label: "D" });
+            new google.maps.Marker({ position: dropoff, map, label: "F" });
 
             driverMarker = new google.maps.Marker({
                 position: driver,
@@ -36,7 +37,6 @@
             });
 
             const directionsService = new google.maps.DirectionsService();
-
             const directionsRenderer = new google.maps.DirectionsRenderer({ 
                 map: map,
                 suppressMarkers: true,
@@ -53,25 +53,6 @@
             }, (response, status) => {
                 if (status === "OK") {
                     directionsRenderer.setDirections(response);
-                }
-            });
-
-            const driverToPickupRenderer = new google.maps.DirectionsRenderer({ 
-                map: map,
-                suppressMarkers: true,
-                polylineOptions: {
-                    strokeColor: "blue",
-                    strokeWeight: 4
-                }
-            });
-
-            directionsService.route({
-                origin: driver,
-                destination: pickup,
-                travelMode: google.maps.TravelMode.DRIVING
-            }, (response, status) => {
-                if (status === "OK") {
-                    driverToPickupRenderer.setDirections(response);
                 }
             });
 
