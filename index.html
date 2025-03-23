@@ -20,7 +20,10 @@
             driverMarker = new google.maps.Marker({
                 position: driver,
                 map,
-                icon: "https://maps.gstatic.com/mapfiles/ms2/micons/motorcycling.png"
+                icon: {
+                    url: "https://maps.gstatic.com/mapfiles/ms2/micons/motorcycling.png",
+                    scaledSize: new google.maps.Size(60, 60)
+                }
             });
 
             const directionsService = new google.maps.DirectionsService();
@@ -37,7 +40,14 @@
             });
 
             if (dropoff) {
-                new google.maps.Marker({ position: dropoff, map, label: "D" });
+                new google.maps.Marker({
+                    position: dropoff,
+                    map,
+                    icon: {
+                        url: "https://maps.gstatic.com/mapfiles/kml/shapes/flag.png",
+                        scaledSize: new google.maps.Size(60, 60)
+                    }
+                });
             }
 
             setInterval(updateDriverLocation, 2000);
