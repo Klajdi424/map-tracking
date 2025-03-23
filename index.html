@@ -6,16 +6,18 @@
         function initMap() {
             const params = new URLSearchParams(window.location.search);
 
-            const pickupLat = parseFloat(params.get('pickupLat')) || 41.3275;
-            const pickupLng = parseFloat(params.get('pickupLng')) || 19.8189;
-            const dropoffLat = parseFloat(params.get('dropoffLat')) || 41.3211;
-            const dropoffLng = parseFloat(params.get('dropoffLng')) || 19.8167;
-            const driverLat = parseFloat(params.get('driverLat')) || 41.3240;
-            const driverLng = parseFloat(params.get('driverLng')) || 19.8200;
-
-            const pickup = { lat: pickupLat, lng: pickupLng };
-            const dropoff = { lat: dropoffLat, lng: dropoffLng };
-            const driver = { lat: driverLat, lng: driverLng };
+            const pickup = { 
+                lat: parseFloat(params.get('pickupLat')) || 41.3275, 
+                lng: parseFloat(params.get('pickupLng')) || 19.8189 
+            };
+            const dropoff = { 
+                lat: parseFloat(params.get('dropoffLat')) || 41.3211, 
+                lng: parseFloat(params.get('dropoffLng')) || 19.8167 
+            };
+            const driver = { 
+                lat: parseFloat(params.get('driverLat')) || 41.3240, 
+                lng: parseFloat(params.get('driverLng')) || 19.8200 
+            };
 
             const map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 14,
@@ -44,8 +46,20 @@
             });
         }
     </script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
 </head>
 <body onload="initMap()">
-    <div id="map" style="height: 100vh; width: 100vw;"></div>
+    <div id="map"></div>
 </body>
 </html>
