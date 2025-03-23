@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
     <script>
         function initMap() {
             const params = new URLSearchParams(window.location.search);
+            console.log("Received query parameters:", params.toString()); // Debug log for query parameters
+            
             const pickupLat = parseFloat(params.get('pickupLat')) || 41.3275;
             const pickupLng = parseFloat(params.get('pickupLng')) || 19.8189;
             const dropoffLat = parseFloat(params.get('dropoffLat')) || 41.3211;
