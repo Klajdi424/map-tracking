@@ -5,14 +5,16 @@
     <script>
         function initMap() {
             const params = new URLSearchParams(window.location.search);
-            console.log("Received query parameters:", params.toString()); // Debug log for query parameters
-            
             const pickupLat = parseFloat(params.get('pickupLat')) || 41.3275;
             const pickupLng = parseFloat(params.get('pickupLng')) || 19.8189;
             const dropoffLat = parseFloat(params.get('dropoffLat')) || 41.3211;
             const dropoffLng = parseFloat(params.get('dropoffLng')) || 19.8167;
             const driverLat = parseFloat(params.get('driverLat')) || 41.3240;
             const driverLng = parseFloat(params.get('driverLng')) || 19.8200;
+
+            console.log("Pickup:", pickupLat, pickupLng);
+            console.log("Dropoff:", dropoffLat, dropoffLng);
+            console.log("Driver:", driverLat, driverLng);
 
             const pickup = { lat: pickupLat, lng: pickupLng };
             const dropoff = { lat: dropoffLat, lng: dropoffLng };
