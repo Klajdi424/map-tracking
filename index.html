@@ -35,7 +35,8 @@
             const directionsService = new google.maps.DirectionsService();
             const directionsRenderer = new google.maps.DirectionsRenderer({ 
                 map,
-                suppressMarkers: true 
+                suppressMarkers: true,
+                preserveViewport: true
             });
 
             directionsService.route({
@@ -57,16 +58,6 @@
             overflow: hidden;
         }
         #map {
-            height: 100%;
-            width: 100%;
-        }
-    </style>
-</head>
-<body onload="initMap()">
-    <div id="map"></div>
-</body>
-</html>
-
             height: 100%;
             width: 100%;
         }
