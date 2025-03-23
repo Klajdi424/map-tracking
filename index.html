@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
     <script>
         function initMap() {
             const params = new URLSearchParams(window.location.search);
@@ -33,7 +33,10 @@
             });
 
             const directionsService = new google.maps.DirectionsService();
-            const directionsRenderer = new google.maps.DirectionsRenderer({ map });
+            const directionsRenderer = new google.maps.DirectionsRenderer({ 
+                map,
+                suppressMarkers: true 
+            });
 
             directionsService.route({
                 origin: pickup,
@@ -54,6 +57,16 @@
             overflow: hidden;
         }
         #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body onload="initMap()">
+    <div id="map"></div>
+</body>
+</html>
+
             height: 100%;
             width: 100%;
         }
