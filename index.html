@@ -9,16 +9,16 @@
             const params = new URLSearchParams(window.location.search);
 
             const pickup = { 
-                lat: parseFloat(params.get('pickupLat')) || 41.3275, 
-                lng: parseFloat(params.get('pickupLng')) || 19.8189 
+                lat: parseFloat(params.get('pickupLat')), 
+                lng: parseFloat(params.get('pickupLng')) 
             };
             const dropoff = { 
-                lat: parseFloat(params.get('dropoffLat')) || 41.3211, 
-                lng: parseFloat(params.get('dropoffLng')) || 19.8167 
+                lat: parseFloat(params.get('dropoffLat')), 
+                lng: parseFloat(params.get('dropoffLng')) 
             };
             const driver = { 
-                lat: parseFloat(params.get('driverLat')) || 41.3240, 
-                lng: parseFloat(params.get('driverLng')) || 19.8200 
+                lat: parseFloat(params.get('driverLat')), 
+                lng: parseFloat(params.get('driverLng')) 
             };
 
             const map = new google.maps.Map(document.getElementById("map"), {
@@ -36,9 +36,14 @@
             });
 
             const directionsService = new google.maps.DirectionsService();
+
             const directionsRenderer = new google.maps.DirectionsRenderer({ 
                 map: map,
-                suppressMarkers: true
+                suppressMarkers: true,
+                polylineOptions: {
+                    strokeColor: "red",
+                    strokeWeight: 4
+                }
             });
 
             directionsService.route({
@@ -48,8 +53,25 @@
             }, (response, status) => {
                 if (status === "OK") {
                     directionsRenderer.setDirections(response);
-                } else {
-                    console.error("Directions request failed due to " + status);
+                }
+            });
+
+            const driverToPickupRenderer = new google.maps.DirectionsRenderer({ 
+                map: map,
+                suppressMarkers: true,
+                polylineOptions: {
+                    strokeColor: "blue",
+                    strokeWeight: 4
+                }
+            });
+
+            directionsService.route({
+                origin: driver,
+                destination: pickup,
+                travelMode: google.maps.TravelMode.DRIVING
+            }, (response, status) => {
+                if (status === "OK") {
+                    driverToPickupRenderer.setDirections(response);
                 }
             });
 
@@ -58,8 +80,8 @@
 
         function updateDriverLocation() {
             const params = new URLSearchParams(window.location.search);
-            const newDriverLat = parseFloat(params.get('driverLat')) || 41.3240;
-            const newDriverLng = parseFloat(params.get('driverLng')) || 19.8200;
+            const newDriverLat = parseFloat(params.get('driverLat'));
+            const newDriverLng = parseFloat(params.get('driverLng'));
 
             const newDriverPosition = { lat: newDriverLat, lng: newDriverLng };
 
@@ -73,7 +95,6 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow: hidden;
         }
         #map {
             height: 100%;
