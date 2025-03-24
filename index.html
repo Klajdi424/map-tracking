@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0&libraries=marker" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0&libraries=marker&map_ids=74ad92454311bfaf" async defer></script>
     <script>
         let driverMarker;
 
@@ -20,20 +20,14 @@
                 position: pickup, 
                 map: map, 
                 title: "Pickup Location", 
-                icon: {
-                    url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png",
-                    scaledSize: new google.maps.Size(60, 60)
-                }
+                content: `<img src="https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png" style="width: 60px; height: 60px;" />`
             });
 
             driverMarker = new AdvancedMarkerElement({
                 position: driver,
                 map: map,
                 title: "Driver Location",
-                icon: {
-                    url: "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png",
-                    scaledSize: new google.maps.Size(60, 60)
-                }
+                content: `<img src="https://raw.githubusercontent.com/Klajdi424/image/main/driver.png" style="width: 60px; height: 60px;" />`
             });
 
             const directionsService = new google.maps.DirectionsService();
@@ -54,10 +48,7 @@
                     position: dropoff,
                     map: map,
                     title: "Dropoff Location",
-                    icon: {
-                        url: "https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png",
-                        scaledSize: new google.maps.Size(60, 60)
-                    }
+                    content: `<img src="https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png" style="width: 60px; height: 60px;" />`
                 });
             }
 
@@ -86,3 +77,4 @@
     <div id="map"></div>
 </body>
 </html>
+
