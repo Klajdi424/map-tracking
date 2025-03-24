@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0&libraries=marker" async defer></script>
     <script>
         let driverMarker;
 
-        function initMap() {
+        async function initMap() {
+            const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
             const params = new URLSearchParams(window.location.search);
 
             const driver = { lat: parseFloat(params.get('driverLat')), lng: parseFloat(params.get('driverLng')) };
@@ -15,18 +16,20 @@
 
             const map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: pickup });
 
-            new google.maps.Marker({ 
+            new AdvancedMarkerElement({ 
                 position: pickup, 
-                map, 
+                map: map, 
+                title: "Pickup Location", 
                 icon: {
                     url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png",
                     scaledSize: new google.maps.Size(60, 60)
                 }
             });
 
-            driverMarker = new google.maps.Marker({
+            driverMarker = new AdvancedMarkerElement({
                 position: driver,
-                map,
+                map: map,
+                title: "Driver Location",
                 icon: {
                     url: "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png",
                     scaledSize: new google.maps.Size(60, 60)
@@ -47,9 +50,10 @@
             });
 
             if (dropoff) {
-                new google.maps.Marker({
+                new AdvancedMarkerElement({
                     position: dropoff,
-                    map,
+                    map: map,
+                    title: "Dropoff Location",
                     icon: {
                         url: "https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png",
                         scaledSize: new google.maps.Size(60, 60)
@@ -61,17 +65,14 @@
         }
 
         function updateDriverLocation() {
-            const params = new URLSearchParams(window.location.search);
-
             fetch("https://klajdi424.github.io/map-tracking/updated-driver-location.json")
                 .then(response => response.json())
                 .then(data => {
-                    const newDriverLat = parseFloat(data.lat);
-                    const newDriverLng = parseFloat(data.lng);
+                    const newDriverPosition = { lat: parseFloat(data.lat), lng: parseFloat(data.lng) };
 
-                    const newDriverPosition = { lat: newDriverLat, lng: newDriverLng };
-
-                    if (driverMarker) driverMarker.setPosition(newDriverPosition);
+                    if (driverMarker) {
+                        driverMarker.position = newDriverPosition;
+                    }
                 })
                 .catch(error => console.error("Error fetching driver location:", error));
         }
