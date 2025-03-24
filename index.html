@@ -8,17 +8,26 @@
                 zoom: 15,
                 center: { lat: 51.5074, lng: -0.1278 }
             });
-            
-            new google.maps.Marker({
-                position: { lat: 51.5007, lng: -0.1246 },
-                map: map,
-                title: "Pickup Location"
-            });
 
-            new google.maps.Marker({
-                position: { lat: 51.5090, lng: -0.1300 },
-                map: map,
-                title: "Driver Location"
+            const directionsService = new google.maps.DirectionsService();
+            const directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
+
+            const pickupLocation = { lat: 51.5007, lng: -0.1246 };
+            const driverLocation = { lat: 51.5090, lng: -0.1300 };
+
+            new google.maps.Marker({ position: pickupLocation, map: map, title: "Pickup Location" });
+            new google.maps.Marker({ position: driverLocation, map: map, title: "Driver Location" });
+
+            directionsService.route({
+                origin: pickupLocation,
+                destination: driverLocation,
+                travelMode: google.maps.TravelMode.DRIVING
+            }, (response, status) => {
+                if (status === "OK") {
+                    directionsRenderer.setDirections(response);
+                } else {
+                    console.error("Directions request failed due to " + status);
+                }
             });
         }
     </script>
