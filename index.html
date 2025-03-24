@@ -1,75 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0&libraries=marker" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0" async defer></script>
     <script>
-        let driverMarker;
-
-        async function initMap() {
-            const params = new URLSearchParams(window.location.search);
-
-            const driver = { lat: parseFloat(params.get('driverLat')), lng: parseFloat(params.get('driverLng')) };
-            const pickup = { lat: parseFloat(params.get('pickupLat')), lng: parseFloat(params.get('pickupLng')) };
-            const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
-                { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
-
-            const map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: pickup });
-
-            function createMarkerContent(imgUrl) {
-                const img = document.createElement("img");
-                img.src = imgUrl;
-                img.style.width = "60px";
-                img.style.height = "60px";
-                return img;
-            }
-
-            new google.maps.marker.AdvancedMarkerElement({ 
-                position: pickup, 
-                map: map, 
-                content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png")
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15,
+                center: { lat: 51.5074, lng: -0.1278 }
             });
 
-            driverMarker = new google.maps.marker.AdvancedMarkerElement({
-                position: driver,
+            new google.maps.Marker({
+                position: { lat: 51.5007, lng: -0.1246 },
                 map: map,
-                content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png")
+                title: "Pickup Location"
             });
 
-            const directionsService = new google.maps.DirectionsService();
-            const directionsRenderer = new google.maps.DirectionsRenderer({ 
-                map: map, suppressMarkers: true, polylineOptions: { strokeColor: dropoff ? "red" : "blue", strokeWeight: 4 }
+            new google.maps.Marker({
+                position: { lat: 51.5090, lng: -0.1300 },
+                map: map,
+                title: "Driver Location"
             });
-
-            directionsService.route({
-                origin: dropoff ? pickup : driver,
-                destination: dropoff || pickup,
-                travelMode: google.maps.TravelMode.DRIVING
-            }, (response, status) => {
-                if (status === "OK") directionsRenderer.setDirections(response);
-            });
-
-            if (dropoff) {
-                new google.maps.marker.AdvancedMarkerElement({
-                    position: dropoff,
-                    map: map,
-                    content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png")
-                });
-            }
-
-            setInterval(updateDriverLocation, 2000);
-        }
-
-        function updateDriverLocation() {
-            fetch("https://klajdi424.github.io/map-tracking/updated-driver-location.json")
-                .then(response => response.json())
-                .then(data => {
-                    const newDriverPosition = { lat: parseFloat(data.lat), lng: parseFloat(data.lng) };
-
-                    if (driverMarker) {
-                        driverMarker.position = newDriverPosition;
-                    }
-                })
-                .catch(error => console.error("Error fetching driver location:", error));
         }
     </script>
     <style>
