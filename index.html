@@ -20,7 +20,7 @@
                 map, 
                 icon: {
                     url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png",
-                scaledSize: new google.maps.Size(60, 60)
+                    scaledSize: new google.maps.Size(60, 60)
                 }
             });
 
@@ -62,12 +62,18 @@
 
         function updateDriverLocation() {
             const params = new URLSearchParams(window.location.search);
-            const newDriverLat = parseFloat(params.get('driverLat'));
-            const newDriverLng = parseFloat(params.get('driverLng'));
 
-            const newDriverPosition = { lat: newDriverLat, lng: newDriverLng };
+            fetch("https://klajdi424.github.io/map-tracking/updated-driver-location.json")
+                .then(response => response.json())
+                .then(data => {
+                    const newDriverLat = parseFloat(data.lat);
+                    const newDriverLng = parseFloat(data.lng);
 
-            if (driverMarker) driverMarker.setPosition(newDriverPosition);
+                    const newDriverPosition = { lat: newDriverLat, lng: newDriverLng };
+
+                    if (driverMarker) driverMarker.setPosition(newDriverPosition);
+                })
+                .catch(error => console.error("Error fetching driver location:", error));
         }
     </script>
     <style>
