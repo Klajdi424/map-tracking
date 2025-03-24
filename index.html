@@ -24,7 +24,7 @@
                 return img;
             }
 
-            new AdvancedMarkerElement({ 
+            const pickupMarker = new AdvancedMarkerElement({ 
                 position: pickup, 
                 map: map, 
                 content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png")
@@ -50,7 +50,7 @@
             });
 
             if (dropoff) {
-                new AdvancedMarkerElement({
+                const dropoffMarker = new AdvancedMarkerElement({
                     position: dropoff,
                     map: map,
                     content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png")
