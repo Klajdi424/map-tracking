@@ -1,24 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-19ZeYgsSfw097vjtEHny7TGzJYOpesM" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0" async defer></script>
     <script>
         function initMap() {
-            const map = new google.maps.Map(document.getElementById("map"), {
+            new google.maps.Map(document.getElementById("map"), {
                 zoom: 15,
                 center: { lat: 51.5074, lng: -0.1278 }
-            });
-
-            new google.maps.Marker({
-                position: { lat: 51.5007, lng: -0.1246 },
-                map: map,
-                title: "Pickup Location"
-            });
-
-            new google.maps.Marker({
-                position: { lat: 51.5090, lng: -0.1300 },
-                map: map,
-                title: "Driver Location"
             });
         }
     </script>
