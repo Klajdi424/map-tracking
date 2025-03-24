@@ -15,7 +15,14 @@
 
             const map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: pickup });
 
-            new google.maps.Marker({ position: pickup, map, label: "P" });
+            new google.maps.Marker({ 
+                position: pickup, 
+                map, 
+                icon: {
+                    url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png",
+                scaledSize: new google.maps.Size(60, 60)
+                }
+            });
 
             driverMarker = new google.maps.Marker({
                 position: driver,
