@@ -32,19 +32,6 @@
                 }
             });
 
-            const directionsService = new google.maps.DirectionsService();
-            const directionsRenderer = new google.maps.DirectionsRenderer({ 
-                map: map, suppressMarkers: true, polylineOptions: { strokeColor: dropoff ? "red" : "blue", strokeWeight: 4 }
-            });
-
-            directionsService.route({
-                origin: dropoff ? pickup : driver,
-                destination: dropoff || pickup,
-                travelMode: google.maps.TravelMode.DRIVING
-            }, (response, status) => {
-                if (status === "OK") directionsRenderer.setDirections(response);
-            });
-
             if (dropoff) {
                 new google.maps.Marker({
                     position: dropoff,
@@ -56,26 +43,15 @@
                 });
             }
 
-            const socket = new WebSocket("ws://localhost:8080");
-
-            socket.onopen = () => {
-                console.log("Connected to WebSocket server!");
-            };
-
-            socket.onmessage = (event) => {
-                const driverLocations = JSON.parse(event.data);
-                if (driverLocations["1"]) {
-                    const newDriverPosition = { 
-                        lat: driverLocations["1"].lat, 
-                        lng: driverLocations["1"].lng 
-                    };
-                    driverMarker.setPosition(newDriverPosition);
-                }
-            };
-
-            socket.onclose = () => {
-                console.log("Disconnected from WebSocket server.");
-            };
+            setInterval(() => {
+                fetch("https://your-server-endpoint/driver-location")
+                    .then(response => response.json())
+                    .then(data => {
+                        const newDriverPosition = { lat: data.lat, lng: data.lng };
+                        driverMarker.setPosition(newDriverPosition);
+                    })
+                    .catch(err => console.error("Error fetching driver location:", err));
+            }, 2000); // Polling every 2 seconds
         }
     </script>
     <style>
