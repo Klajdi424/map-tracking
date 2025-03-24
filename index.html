@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY" async defer></script>
     <script>
         function initMap() {
             const map = new google.maps.Map(document.getElementById("map"), {
@@ -9,18 +9,27 @@
                 center: { lat: 51.5074, lng: -0.1278 }
             });
 
-            const directionsService = new google.maps.DirectionsService();
-            const directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
-
             const pickupLocation = { lat: 51.5007, lng: -0.1246 };
             const driverLocation = { lat: 51.5090, lng: -0.1300 };
 
-            new google.maps.Marker({ position: pickupLocation, map: map, title: "Pickup Location" });
-            new google.maps.Marker({ position: driverLocation, map: map, title: "Driver Location" });
+            new google.maps.Marker({
+                position: pickupLocation,
+                map: map,
+                title: "Pickup Location"
+            });
+
+            new google.maps.Marker({
+                position: driverLocation,
+                map: map,
+                title: "Driver Location"
+            });
+
+            const directionsService = new google.maps.DirectionsService();
+            const directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
 
             directionsService.route({
-                origin: pickupLocation,
-                destination: driverLocation,
+                origin: driverLocation,
+                destination: pickupLocation,
                 travelMode: google.maps.TravelMode.DRIVING
             }, (response, status) => {
                 if (status === "OK") {
