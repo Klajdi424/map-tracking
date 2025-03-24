@@ -16,16 +16,24 @@
 
             const map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: pickup });
 
+            function createMarkerContent(imgUrl) {
+                const img = document.createElement("img");
+                img.src = imgUrl;
+                img.style.width = "60px";
+                img.style.height = "60px";
+                return img;
+            }
+
             new AdvancedMarkerElement({ 
                 position: pickup, 
                 map: map, 
-                content: `<img src="https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png" style="width: 60px; height: 60px;" />`
+                content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png")
             });
 
             driverMarker = new AdvancedMarkerElement({
                 position: driver,
                 map: map,
-                content: `<img src="https://raw.githubusercontent.com/Klajdi424/image/main/driver.png" style="width: 60px; height: 60px;" />`
+                content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png")
             });
 
             const directionsService = new google.maps.DirectionsService();
@@ -45,7 +53,7 @@
                 new AdvancedMarkerElement({
                     position: dropoff,
                     map: map,
-                    content: `<img src="https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png" style="width: 60px; height: 60px;" />`
+                    content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png")
                 });
             }
 
@@ -74,5 +82,3 @@
     <div id="map"></div>
 </body>
 </html>
-
-
