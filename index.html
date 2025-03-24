@@ -6,7 +6,6 @@
         let driverMarker;
 
         async function initMap() {
-            const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
             const params = new URLSearchParams(window.location.search);
 
             const driver = { lat: parseFloat(params.get('driverLat')), lng: parseFloat(params.get('driverLng')) };
@@ -24,13 +23,13 @@
                 return img;
             }
 
-            const pickupMarker = new AdvancedMarkerElement({ 
+            new google.maps.marker.AdvancedMarkerElement({ 
                 position: pickup, 
                 map: map, 
                 content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png")
             });
 
-            driverMarker = new AdvancedMarkerElement({
+            driverMarker = new google.maps.marker.AdvancedMarkerElement({
                 position: driver,
                 map: map,
                 content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png")
@@ -50,7 +49,7 @@
             });
 
             if (dropoff) {
-                const dropoffMarker = new AdvancedMarkerElement({
+                new google.maps.marker.AdvancedMarkerElement({
                     position: dropoff,
                     map: map,
                     content: createMarkerContent("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png")
