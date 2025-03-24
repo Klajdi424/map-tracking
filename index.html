@@ -44,7 +44,7 @@
             }
 
             setInterval(() => {
-                fetch("https://your-server-endpoint/driver-location")
+                fetch("https://map-tracking-30j9.onrender.com")
                     .then(response => response.json())
                     .then(data => {
                         const newDriverPosition = { lat: data.lat, lng: data.lng };
