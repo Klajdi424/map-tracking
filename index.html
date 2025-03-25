@@ -40,7 +40,7 @@
 
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({ 
-                map: map, suppressMarkers: true, polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+                map: map, suppressMarkers: true, polylineOptions: { strokeColor: dropoff ? "red" : "blue", strokeWeight: 4 }
             });
 
             calculateRoute(driver, dropoff || pickup);
