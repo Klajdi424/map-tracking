@@ -4,14 +4,14 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0" async defer></script>
     <script>
         let driverMarker;
-        let pickupMarker;
-        let dropoffMarker;
         let directionsService, directionsRenderer;
 
         function initMap() {
             const params = new URLSearchParams(window.location.search);
 
-            const driver = { lat: parseFloat(params.get('driverLat')), lng: parseFloat(params.get('driverLng')) };
+            const driver = params.has('driverLat') && params.has('driverLng') ? 
+                { lat: parseFloat(params.get('driverLat')), lng: parseFloat(params.get('driverLng')) } : null;
+
             const pickup = { lat: parseFloat(params.get('pickupLat')), lng: parseFloat(params.get('pickupLng')) };
             const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
                 { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
@@ -22,33 +22,19 @@
                 disableDefaultUI: true 
             });
 
-            pickupMarker = new google.maps.Marker({ 
-                position: pickup, 
-                map, 
-                icon: {
-                    url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png",
-                    scaledSize: new google.maps.Size(60, 60)
-                }
-            });
-
-            driverMarker = new google.maps.Marker({
-                position: driver,
-                map,
-                icon: {
-                    url: "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png",
-                    scaledSize: new google.maps.Size(60, 60)
-                }
-            });
-
-            directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({ 
-                map: map, suppressMarkers: true, polylineOptions: { strokeColor: dropoff ? "red" : "blue", strokeWeight: 4 }
-            });
-
-            calculateRoute(driver, dropoff || pickup);
+            if (pickup) {
+                new google.maps.Marker({ 
+                    position: pickup, 
+                    map, 
+                    icon: {
+                        url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png",
+                        scaledSize: new google.maps.Size(60, 60)
+                    }
+                });
+            }
 
             if (dropoff) {
-                dropoffMarker = new google.maps.Marker({
+                new google.maps.Marker({
                     position: dropoff,
                     map,
                     icon: {
@@ -58,7 +44,27 @@
                 });
             }
 
-            setInterval(updateDriverLocation, 1000);
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({ 
+                map: map, suppressMarkers: true, polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+            });
+
+            if (!driver && pickup && dropoff) {
+                calculateRoute(pickup, dropoff);
+            } else if (driver) {
+                driverMarker = new google.maps.Marker({
+                    position: driver,
+                    map,
+                    icon: {
+                        url: "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png",
+                        scaledSize: new google.maps.Size(60, 60)
+                    }
+                });
+
+                calculateRoute(driver, dropoff || pickup);
+
+                setInterval(updateDriverLocation, 1000);
+            }
         }
 
         function calculateRoute(origin, destination) {
