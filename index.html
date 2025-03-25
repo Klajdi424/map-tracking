@@ -4,6 +4,8 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0" async defer></script>
     <script>
         let driverMarker;
+        let pickupMarker;
+        let dropoffMarker;
         let directionsService, directionsRenderer;
 
         function initMap() {
@@ -20,7 +22,7 @@
                 disableDefaultUI: true 
             });
 
-            new google.maps.Marker({ 
+            pickupMarker = new google.maps.Marker({ 
                 position: pickup, 
                 map, 
                 icon: {
@@ -46,7 +48,7 @@
             calculateRoute(driver, dropoff || pickup);
 
             if (dropoff) {
-                new google.maps.Marker({
+                dropoffMarker = new google.maps.Marker({
                     position: dropoff,
                     map,
                     icon: {
