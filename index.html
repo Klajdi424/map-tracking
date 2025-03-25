@@ -14,7 +14,7 @@
             const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
                 { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
 
-            const map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: pickup });
+            const map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: pickup disableDefaultUI: true });
 
             new google.maps.Marker({ 
                 position: pickup, 
