@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0" async defer></script>
     <script>
         let driverMarker;
         let directionsService, directionsRenderer;
@@ -14,7 +14,11 @@
             const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
                 { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
 
-            const map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: pickup disableDefaultUI: true });
+            const map = new google.maps.Map(document.getElementById("map"), { 
+                zoom: 15, 
+                center: pickup, 
+                disableDefaultUI: true 
+            });
 
             new google.maps.Marker({ 
                 position: pickup, 
@@ -63,8 +67,6 @@
             }, (response, status) => {
                 if (status === "OK") {
                     directionsRenderer.setDirections(response);
-                } else {
-                    console.error("Directions request failed due to: " + status);
                 }
             });
         }
