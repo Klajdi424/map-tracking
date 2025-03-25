@@ -1,34 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0" async defer></script>
   <script>
     let driverMarker;
     let directionsService;
     let directionsRenderer;
     let map;
+    let routeType = "";
 
     function initMap() {
       const params = new URLSearchParams(window.location.search);
-      const driver = { lat: parseFloat(params.get('driverLat')), lng: parseFloat(params.get('driverLng')) };
-      const pickup = { lat: parseFloat(params.get('pickupLat')), lng: parseFloat(params.get('pickupLng')) };
-      const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ?
+      const driver = (params.has('driverLat') && params.has('driverLng')) ?
+        { lat: parseFloat(params.get('driverLat')), lng: parseFloat(params.get('driverLng')) } : null;
+      const pickup = (params.has('pickupLat') && params.has('pickupLng')) ?
+        { lat: parseFloat(params.get('pickupLat')), lng: parseFloat(params.get('pickupLng')) } : null;
+      const dropoff = (params.has('dropoffLat') && params.has('dropoffLng')) ?
         { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
-      
-      map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 15,
-        center: driver || pickup,
+
+      let centerPoint = driver || pickup || dropoff;
+      map = new google.maps.Map(document.getElementById("map"), { 
+        zoom: 15, 
+        center: centerPoint,
         disableDefaultUI: true
       });
       
-      new google.maps.Marker({
-        position: pickup,
-        map: map,
-        icon: {
-          url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png",
-          scaledSize: new google.maps.Size(60, 60)
-        }
-      });
+      directionsService = new google.maps.DirectionsService();
+
+      if (pickup) {
+        new google.maps.Marker({
+          position: pickup,
+          map: map,
+          icon: {
+            url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png",
+            scaledSize: new google.maps.Size(60, 60)
+          }
+        });
+      }
       
       if (dropoff) {
         new google.maps.Marker({
@@ -41,14 +49,25 @@
         });
       }
       
-      directionsService = new google.maps.DirectionsService();
+      let polyColor = "red";
+      if (driver && dropoff && !pickup) {
+        routeType = "blue_no_pickup";
+        polyColor = "blue";
+      } else if (driver && dropoff && pickup) {
+        routeType = "red_with_pickup";
+        polyColor = "red";
+      } else if (!driver && pickup && dropoff) {
+        routeType = "red_static";
+        polyColor = "red";
+      }
+      
       directionsRenderer = new google.maps.DirectionsRenderer({
         map: map,
         suppressMarkers: true,
-        polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+        polylineOptions: { strokeColor: polyColor, strokeWeight: 4 }
       });
       
-      if (driver && pickup && dropoff) {
+      if (driver) {
         driverMarker = new google.maps.Marker({
           position: driver,
           map: map,
@@ -57,33 +76,47 @@
             scaledSize: new google.maps.Size(60, 60)
           }
         });
-        calculateRoute(driver, dropoff, [{ location: pickup, stopover: true }], directionsRenderer);
+        if (routeType === "blue_no_pickup") {
+          calculateRoute(driver, dropoff, null);
+        } else if (routeType === "red_with_pickup") {
+          calculateRoute(driver, dropoff, [{ location: pickup, stopover: true }]);
+        }
         setInterval(() => updateDriverLocation(pickup, dropoff), 2000);
-      } else if (pickup && dropoff) {
-        calculateRoute(pickup, dropoff, [], directionsRenderer);
+      } else if (routeType === "red_static") {
+        calculateRoute(pickup, dropoff, null);
       }
     }
 
-    function calculateRoute(origin, destination, waypoints, renderer) {
-      directionsService.route({
+    function calculateRoute(origin, destination, waypoints) {
+      let request = {
         origin: origin,
         destination: destination,
-        waypoints: waypoints,
         travelMode: google.maps.TravelMode.DRIVING
-      }, (response, status) => {
+      };
+      if (waypoints) {
+        request.waypoints = waypoints;
+      }
+      directionsService.route(request, (response, status) => {
         if (status === "OK") {
-          renderer.setDirections(response);
+          directionsRenderer.setDirections(response);
         }
       });
     }
 
     function updateDriverLocation(pickup, dropoff) {
       const params = new URLSearchParams(window.location.search);
-      const newDriver = { lat: parseFloat(params.get('driverLat')), lng: parseFloat(params.get('driverLng')) };
+      const newDriver = { 
+        lat: parseFloat(params.get("driverLat")), 
+        lng: parseFloat(params.get("driverLng")) 
+      };
       if (driverMarker) {
         driverMarker.setPosition(newDriver);
       }
-      calculateRoute(newDriver, dropoff, [{ location: pickup, stopover: true }], directionsRenderer);
+      if (routeType === "blue_no_pickup") {
+        calculateRoute(newDriver, dropoff, null);
+      } else if (routeType === "red_with_pickup") {
+        calculateRoute(newDriver, dropoff, [{ location: pickup, stopover: true }]);
+      }
     }
   </script>
   <style>
