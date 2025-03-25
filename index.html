@@ -5,7 +5,6 @@
     <script>
         let driverMarker;
         let directionsService;
-        let pickupRenderer;
         let dropoffRenderer;
 
         function initMap() {
@@ -27,6 +26,11 @@
             });
 
             directionsService = new google.maps.DirectionsService();
+            dropoffRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true,
+                polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+            });
 
             if (pickup) {
                 new google.maps.Marker({ 
@@ -60,31 +64,9 @@
                     }
                 });
 
-                pickupRenderer = new google.maps.DirectionsRenderer({
-                    map: map,
-                    suppressMarkers: true,
-                    polylineOptions: { strokeColor: "blue", strokeWeight: 4 }
-                });
+                calculateRoute(driver, dropoff, dropoffRenderer);
 
-                dropoffRenderer = new google.maps.DirectionsRenderer({
-                    map: map,
-                    suppressMarkers: true,
-                    polylineOptions: { strokeColor: "red", strokeWeight: 4 }
-                });
-
-                calculateRoute(driver, pickup, pickupRenderer);
-                if (dropoff) {
-                    calculateRoute(pickup, dropoff, dropoffRenderer);
-                }
-
-                setInterval(() => updateDriverLocation(driverMarker, dropoff), 1000);
-            } else if (pickup && dropoff) {
-                dropoffRenderer = new google.maps.DirectionsRenderer({
-                    map: map,
-                    suppressMarkers: true,
-                    polylineOptions: { strokeColor: "red", strokeWeight: 4 }
-                });
-                calculateRoute(pickup, dropoff, dropoffRenderer);
+                setInterval(updateDriverLocation, 1000);
             }
         }
 
@@ -100,16 +82,19 @@
             });
         }
 
-        function updateDriverLocation(marker, dropoff) {
+        function updateDriverLocation() {
             const params = new URLSearchParams(window.location.search);
             const newDriverLat = parseFloat(params.get('driverLat'));
             const newDriverLng = parseFloat(params.get('driverLng'));
 
             const newDriverPosition = { lat: newDriverLat, lng: newDriverLng };
 
-            if (marker) {
-                marker.setPosition(newDriverPosition);
+            if (driverMarker) {
+                driverMarker.setPosition(newDriverPosition);
             }
+
+            const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
+                { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
 
             if (dropoff) {
                 calculateRoute(newDriverPosition, dropoff, dropoffRenderer);
