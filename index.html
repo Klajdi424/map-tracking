@@ -5,7 +5,8 @@
     <script>
         let driverMarker;
         let directionsService;
-        let directionsRenderer;
+        let blueRouteRenderer;
+        let redRouteRenderer;
 
         function initMap() {
             const params = new URLSearchParams(window.location.search);
@@ -47,13 +48,20 @@
             }
 
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({ 
+            blueRouteRenderer = new google.maps.DirectionsRenderer({ 
+                map: map, suppressMarkers: true, polylineOptions: { strokeColor: "blue", strokeWeight: 4 }
+            });
+
+            redRouteRenderer = new google.maps.DirectionsRenderer({ 
                 map: map, suppressMarkers: true, polylineOptions: { strokeColor: "red", strokeWeight: 4 }
             });
 
-            calculateRoute(driver, dropoff, directionsRenderer);
+            calculateRoute(driver, pickup, blueRouteRenderer);
+            if (dropoff) {
+                calculateRoute(driver, dropoff, redRouteRenderer);
+            }
 
-            setInterval(() => updateDriverLocation(dropoff), 2000);
+            setInterval(() => updateDriverLocation(pickup, dropoff), 2000);
         }
 
         function calculateRoute(origin, destination, renderer) {
@@ -66,7 +74,7 @@
             });
         }
 
-        function updateDriverLocation(dropoff) {
+        function updateDriverLocation(pickup, dropoff) {
             const params = new URLSearchParams(window.location.search);
             const newDriverLat = parseFloat(params.get('driverLat'));
             const newDriverLng = parseFloat(params.get('driverLng'));
@@ -75,7 +83,10 @@
 
             if (driverMarker) driverMarker.setPosition(newDriverPosition);
 
-            calculateRoute(newDriverPosition, dropoff, directionsRenderer);
+            calculateRoute(newDriverPosition, pickup, blueRouteRenderer);
+            if (dropoff) {
+                calculateRoute(newDriverPosition, dropoff, redRouteRenderer);
+            }
         }
     </script>
     <style>
