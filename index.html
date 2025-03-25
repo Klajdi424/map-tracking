@@ -61,6 +61,10 @@
                     }
                 });
 
+                directionsRenderer = new google.maps.DirectionsRenderer({ 
+                    map: map, suppressMarkers: true, polylineOptions: { strokeColor: "blue", strokeWeight: 4 }
+                        });
+
                 calculateRoute(driver, dropoff || pickup);
 
                 setInterval(updateDriverLocation, 1000);
