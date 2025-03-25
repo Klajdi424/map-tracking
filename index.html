@@ -5,6 +5,7 @@
     <script>
         let driverMarker;
         let directionsService;
+        let pickupRenderer;
         let dropoffRenderer;
 
         function initMap() {
@@ -13,15 +14,19 @@
             const driver = params.has('driverLat') && params.has('driverLng') ? 
                 { lat: parseFloat(params.get('driverLat')), lng: parseFloat(params.get('driverLng')) } : null;
 
-            const pickup = { lat: parseFloat(params.get('pickupLat')), lng: parseFloat(params.get('pickupLng')) };
+            const pickup = params.has('pickupLat') && params.has('pickupLng') ? 
+                { lat: parseFloat(params.get('pickupLat')), lng: parseFloat(params.get('pickupLng')) } : null;
+
             const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
                 { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
 
             const map = new google.maps.Map(document.getElementById("map"), { 
                 zoom: 15, 
-                center: driver || pickup, 
+                center: driver || pickup || dropoff, 
                 disableDefaultUI: true 
             });
+
+            directionsService = new google.maps.DirectionsService();
 
             if (pickup) {
                 new google.maps.Marker({ 
@@ -45,14 +50,7 @@
                 });
             }
 
-            directionsService = new google.maps.DirectionsService();
-            dropoffRenderer = new google.maps.DirectionsRenderer({
-                map: map,
-                suppressMarkers: true,
-                polylineOptions: { strokeColor: "red", strokeWeight: 4 }
-            });
-
-            if (driver) {
+            if (driver && dropoff) {
                 driverMarker = new google.maps.Marker({
                     position: driver,
                     map,
@@ -62,8 +60,23 @@
                     }
                 });
 
+                dropoffRenderer = new google.maps.DirectionsRenderer({
+                    map: map,
+                    suppressMarkers: true,
+                    polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+                });
+
                 calculateRoute(driver, dropoff, dropoffRenderer);
+
                 setInterval(updateDriverLocation, 1000);
+            } else if (pickup && dropoff) {
+                dropoffRenderer = new google.maps.DirectionsRenderer({
+                    map: map,
+                    suppressMarkers: true,
+                    polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+                });
+
+                calculateRoute(pickup, dropoff, dropoffRenderer);
             }
         }
 
@@ -90,9 +103,12 @@
                 driverMarker.setPosition(newDriverPosition);
             }
 
-            const dropoff = { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) };
+            const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
+                { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
 
-            calculateRoute(newDriverPosition, dropoff, dropoffRenderer);
+            if (dropoff) {
+                calculateRoute(newDriverPosition, dropoff, dropoffRenderer);
+            }
         }
     </script>
     <style>
