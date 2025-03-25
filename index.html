@@ -42,7 +42,10 @@
                         scaledSize: new google.maps.Size(60, 60)
                     }
                 });
-            }
+
+                directionsRenderer = new google.maps.DirectionsRenderer({
+                     map: map, suppressMarkers: true, polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+            });
 
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({ 
