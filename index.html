@@ -5,7 +5,6 @@
     <script>
         let driverMarker;
         let directionsService;
-        let pickupRenderer;
         let dropoffRenderer;
 
         function initMap() {
@@ -47,6 +46,11 @@
             }
 
             directionsService = new google.maps.DirectionsService();
+            dropoffRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true,
+                polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+            });
 
             if (driver) {
                 driverMarker = new google.maps.Marker({
@@ -58,29 +62,8 @@
                     }
                 });
 
-                pickupRenderer = new google.maps.DirectionsRenderer({
-                    map: map,
-                    suppressMarkers: true,
-                    polylineOptions: { strokeColor: "blue", strokeWeight: 4 }
-                });
-
-                dropoffRenderer = new google.maps.DirectionsRenderer({
-                    map: map,
-                    suppressMarkers: true,
-                    polylineOptions: { strokeColor: "red", strokeWeight: 4 }
-                });
-
-                calculateRoute(driver, pickup, pickupRenderer);
-                calculateRoute(pickup, dropoff, dropoffRenderer);
-
+                calculateRoute(driver, dropoff, dropoffRenderer);
                 setInterval(updateDriverLocation, 1000);
-            } else if (pickup && dropoff) {
-                dropoffRenderer = new google.maps.DirectionsRenderer({
-                    map: map,
-                    suppressMarkers: true,
-                    polylineOptions: { strokeColor: "red", strokeWeight: 4 }
-                });
-                calculateRoute(pickup, dropoff, dropoffRenderer);
             }
         }
 
@@ -107,12 +90,9 @@
                 driverMarker.setPosition(newDriverPosition);
             }
 
-            const pickup = { lat: parseFloat(params.get('pickupLat')), lng: parseFloat(params.get('pickupLng')) };
-            const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
-                { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
+            const dropoff = { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) };
 
-            calculateRoute(newDriverPosition, pickup, pickupRenderer);
-            calculateRoute(pickup, dropoff, dropoffRenderer);
+            calculateRoute(newDriverPosition, dropoff, dropoffRenderer);
         }
     </script>
     <style>
