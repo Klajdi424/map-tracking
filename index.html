@@ -4,6 +4,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0"></script>
     <script>
         let driverMarker;
+        let directionsService, directionsRenderer;
 
         function initMap() {
             const params = new URLSearchParams(window.location.search);
@@ -20,7 +21,7 @@
                 map, 
                 icon: {
                     url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png",
-                scaledSize: new google.maps.Size(60, 60)
+                    scaledSize: new google.maps.Size(60, 60)
                 }
             });
 
@@ -33,18 +34,12 @@
                 }
             });
 
-            const directionsService = new google.maps.DirectionsService();
-            const directionsRenderer = new google.maps.DirectionsRenderer({ 
-                map: map, suppressMarkers: true, polylineOptions: { strokeColor: dropoff ? "red" : "blue", strokeWeight: 4 }
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({ 
+                map: map, suppressMarkers: true, polylineOptions: { strokeColor: "red", strokeWeight: 4 }
             });
 
-            directionsService.route({
-                origin: dropoff ? pickup : driver,
-                destination: dropoff || pickup,
-                travelMode: google.maps.TravelMode.DRIVING
-            }, (response, status) => {
-                if (status === "OK") directionsRenderer.setDirections(response);
-            });
+            calculateRoute(driver, dropoff || pickup);
 
             if (dropoff) {
                 new google.maps.Marker({
@@ -60,6 +55,20 @@
             setInterval(updateDriverLocation, 2000);
         }
 
+        function calculateRoute(origin, destination) {
+            directionsService.route({
+                origin: origin,
+                destination: destination,
+                travelMode: google.maps.TravelMode.DRIVING
+            }, (response, status) => {
+                if (status === "OK") {
+                    directionsRenderer.setDirections(response);
+                } else {
+                    console.error("Directions request failed due to: " + status);
+                }
+            });
+        }
+
         function updateDriverLocation() {
             const params = new URLSearchParams(window.location.search);
             const newDriverLat = parseFloat(params.get('driverLat'));
@@ -68,6 +77,12 @@
             const newDriverPosition = { lat: newDriverLat, lng: newDriverLng };
 
             if (driverMarker) driverMarker.setPosition(newDriverPosition);
+
+            const pickup = { lat: parseFloat(params.get('pickupLat')), lng: parseFloat(params.get('pickupLng')) };
+            const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
+                { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
+
+            calculateRoute(newDriverPosition, dropoff || pickup);
         }
     </script>
     <style>
@@ -78,5 +93,4 @@
 <body onload="initMap()">
     <div id="map"></div>
 </body>
-</html>
 </html>
