@@ -8,6 +8,7 @@
     let blueRenderer;
     let redRenderer;
     let map;
+    let lastParams = window.location.search;
     
     function initMap() {
       const params = new URLSearchParams(window.location.search);
@@ -85,7 +86,7 @@
     function updateDriverLocation(pickup, dropoff) {
       const params = new URLSearchParams(window.location.search);
       const newDriver = { lat: parseFloat(params.get("driverLat")), lng: parseFloat(params.get("driverLng")) };
-      if (driverMarker) { driverMarker.setPosition(newDriver); }
+      if (driverMarker) { smoothMoveMarker(driverMarker, newDriver); }
       if (dropoff) {
         calculateRoute(newDriver, dropoff, null, redRenderer);
       }
@@ -93,6 +94,34 @@
         calculateRoute(newDriver, pickup, null, blueRenderer);
       }
     }
+    
+    function smoothMoveMarker(marker, newPosition) {
+      const oldPosition = marker.getPosition();
+      const frames = 30;
+      let count = 0;
+      
+      const deltaLat = (newPosition.lat - oldPosition.lat()) / frames;
+      const deltaLng = (newPosition.lng - oldPosition.lng()) / frames;
+      
+      const interval = setInterval(() => {
+        count++;
+        const nextLat = oldPosition.lat() + deltaLat * count;
+        const nextLng = oldPosition.lng() + deltaLng * count;
+        
+        marker.setPosition(new google.maps.LatLng(nextLat, nextLng));
+        
+        if (count >= frames) {
+          clearInterval(interval);
+        }
+      }, 50);
+    }
+    
+    setInterval(() => {
+      if (window.location.search !== lastParams) {
+        lastParams = window.location.search;
+        updateDriverLocation(pickup, dropoff);
+      }
+    }, 1000);
   </script>
   <style>
     html, body { margin: 0; padding: 0; height: 100%; }
