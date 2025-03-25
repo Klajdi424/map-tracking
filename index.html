@@ -15,8 +15,8 @@
       const pickup = (params.has("pickupLat") && params.has("pickupLng")) ? { lat: parseFloat(params.get("pickupLat")), lng: parseFloat(params.get("pickupLng")) } : null;
       const dropoff = (params.has("dropoffLat") && params.has("dropoffLng")) ? { lat: parseFloat(params.get("dropoffLat")), lng: parseFloat(params.get("dropoffLng")) } : null;
       
-      map = new google.maps.Map(document.getElementById("map"), { 
-        zoom: 15, 
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 15,
         center: driver || pickup || dropoff,
         disableDefaultUI: true
       });
@@ -26,7 +26,7 @@
         new google.maps.Marker({
           position: pickup,
           map: map,
-          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png", scaledSize: new google.maps.Size(60, 60) }
+          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png", scaledSize: new google.maps.Size(60,60) }
         });
         bounds.extend(pickup);
       }
@@ -34,7 +34,7 @@
         new google.maps.Marker({
           position: dropoff,
           map: map,
-          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png", scaledSize: new google.maps.Size(60, 60) }
+          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png", scaledSize: new google.maps.Size(60,60) }
         });
         bounds.extend(dropoff);
       }
@@ -42,7 +42,7 @@
         driverMarker = new google.maps.Marker({
           position: driver,
           map: map,
-          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png", scaledSize: new google.maps.Size(60, 60) }
+          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png", scaledSize: new google.maps.Size(60,60) }
         });
         bounds.extend(driver);
       }
@@ -62,28 +62,22 @@
         polylineOptions: { strokeColor: "red", strokeWeight: 4 }
       });
       
-      if (driver && pickup && !dropoff) {
-        calculateRoute(driver, pickup, null, blueRenderer);
-      } else if (driver && pickup && dropoff) {
-        calculateRoute(driver, pickup, null, blueRenderer);
-        calculateRoute(driver, dropoff, [{ location: pickup, stopover: true }], redRenderer);
-      } else if (!driver && pickup && dropoff) {
-        calculateRoute(pickup, dropoff, null, redRenderer);
-      }
-      
       if (driver) {
+        if (pickup && dropoff) {
+          calculateRoute(driver, dropoff, null, redRenderer);
+        } else if (pickup && !dropoff) {
+          calculateRoute(driver, pickup, null, blueRenderer);
+        }
         setInterval(() => updateDriverLocation(pickup, dropoff), 2000);
+      } else if (pickup && dropoff) {
+        calculateRoute(pickup, dropoff, null, redRenderer);
       }
     }
     
     function calculateRoute(origin, destination, waypoints, renderer) {
-      let request = { 
-        origin: origin, 
-        destination: destination, 
-        travelMode: google.maps.TravelMode.DRIVING 
-      };
-      if (waypoints) { request.waypoints = waypoints; }
-      directionsService.route(request, (response, status) => {
+      let req = { origin: origin, destination: destination, travelMode: google.maps.TravelMode.DRIVING };
+      if(waypoints) { req.waypoints = waypoints; }
+      directionsService.route(req, (response, status) => {
         if (status === "OK") { renderer.setDirections(response); }
       });
     }
@@ -92,11 +86,11 @@
       const params = new URLSearchParams(window.location.search);
       const newDriver = { lat: parseFloat(params.get("driverLat")), lng: parseFloat(params.get("driverLng")) };
       if (driverMarker) { driverMarker.setPosition(newDriver); }
-      if (pickup && !dropoff) {
+      if (dropoff) {
+        calculateRoute(newDriver, dropoff, null, redRenderer);
+      }
+      else if (pickup) {
         calculateRoute(newDriver, pickup, null, blueRenderer);
-      } else if (pickup && dropoff) {
-        calculateRoute(newDriver, pickup, null, blueRenderer);
-        calculateRoute(newDriver, dropoff, [{ location: pickup, stopover: true }], redRenderer);
       }
     }
   </script>
