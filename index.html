@@ -44,13 +44,13 @@
                 });
 
                 directionsRenderer = new google.maps.DirectionsRenderer({
-                     map: map, suppressMarkers: true, polylineOptions: { strokeColor: "red", strokeWeight: 4 }
-            });
+                    map: map, 
+                    suppressMarkers: true, 
+                    polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+                });
+            }
 
             directionsService = new google.maps.DirectionsService();
-            directionsRenderer = new google.maps.DirectionsRenderer({ 
-                map: map, suppressMarkers: true, polylineOptions: { strokeColor: "red", strokeWeight: 4 }
-            });
 
             if (!driver && pickup && dropoff) {
                 calculateRoute(pickup, dropoff);
@@ -65,8 +65,10 @@
                 });
 
                 directionsRenderer = new google.maps.DirectionsRenderer({ 
-                    map: map, suppressMarkers: true, polylineOptions: { strokeColor: "blue", strokeWeight: 4 }
-                        });
+                    map: map, 
+                    suppressMarkers: true, 
+                    polylineOptions: { strokeColor: "blue", strokeWeight: 4 }
+                });
 
                 calculateRoute(driver, dropoff || pickup);
 
