@@ -4,7 +4,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDESOPDnAmfX5e5qqWc0Smy6kpj3kfN_J0" async defer></script>
     <script>
         let driverMarker;
-        let directionsService, directionsRenderer;
+        let directionsService;
 
         function initMap() {
             const params = new URLSearchParams(window.location.search);
@@ -42,18 +42,17 @@
                         scaledSize: new google.maps.Size(60, 60)
                     }
                 });
-
-                directionsRenderer = new google.maps.DirectionsRenderer({
-                    map: map, 
-                    suppressMarkers: true, 
-                    polylineOptions: { strokeColor: "red", strokeWeight: 4 }
-                });
             }
 
             directionsService = new google.maps.DirectionsService();
 
             if (!driver && pickup && dropoff) {
-                calculateRoute(pickup, dropoff);
+                const dropoffRenderer = new google.maps.DirectionsRenderer({
+                    map: map,
+                    suppressMarkers: true,
+                    polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+                });
+                calculateRoute(pickup, dropoff, dropoffRenderer);
             } else if (driver) {
                 driverMarker = new google.maps.Marker({
                     position: driver,
@@ -64,26 +63,33 @@
                     }
                 });
 
-                directionsRenderer = new google.maps.DirectionsRenderer({ 
-                    map: map, 
-                    suppressMarkers: true, 
+                const pickupRenderer = new google.maps.DirectionsRenderer({
+                    map: map,
+                    suppressMarkers: true,
+                    polylineOptions: { strokeColor: "blue", strokeWeight: 4 }
+                });
+
+                const dropoffRenderer = new google.maps.DirectionsRenderer({
+                    map: map,
+                    suppressMarkers: true,
                     polylineOptions: { strokeColor: "red", strokeWeight: 4 }
                 });
 
-                calculateRoute(driver, dropoff || pickup);
+                calculateRoute(driver, pickup, pickupRenderer);
+                calculateRoute(pickup, dropoff, dropoffRenderer);
 
                 setInterval(updateDriverLocation, 1000);
             }
         }
 
-        function calculateRoute(origin, destination) {
+        function calculateRoute(origin, destination, renderer) {
             directionsService.route({
                 origin: origin,
                 destination: destination,
                 travelMode: google.maps.TravelMode.DRIVING
             }, (response, status) => {
                 if (status === "OK") {
-                    directionsRenderer.setDirections(response);
+                    renderer.setDirections(response);
                 }
             });
         }
@@ -101,7 +107,20 @@
             const dropoff = params.has('dropoffLat') && params.has('dropoffLng') ? 
                 { lat: parseFloat(params.get('dropoffLat')), lng: parseFloat(params.get('dropoffLng')) } : null;
 
-            calculateRoute(newDriverPosition, dropoff || pickup);
+            const pickupRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true,
+                polylineOptions: { strokeColor: "blue", strokeWeight: 4 }
+            });
+
+            const dropoffRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true,
+                polylineOptions: { strokeColor: "red", strokeWeight: 4 }
+            });
+
+            calculateRoute(newDriverPosition, pickup, pickupRenderer);
+            calculateRoute(pickup, dropoff, dropoffRenderer);
         }
     </script>
     <style>
