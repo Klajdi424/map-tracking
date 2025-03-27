@@ -20,6 +20,19 @@
         zoom: 15,
         center: driver || pickup || dropoff,
         disableDefaultUI: true
+        styles: [
+          { elementType: 'geometry', stylers: [{ color: '#2E2E2E' }] },
+          { elementType: 'labels.text.stroke', stylers: [{ color: '#2E2E2E' }] },
+          { elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] },
+          { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#8A2BE2' }] }, 
+          { featureType: 'water', stylers: [{ color: '#1A1A1A' }] }, 
+          { featureType: 'landscape.natural', stylers: [{ color: '#1A1A1A' }] }, 
+          { featureType: 'administrative', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] }, 
+          { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] }, 
+          { featureType: 'locality', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] },
+          { featureType: 'country', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] }, 
+          { featureType: 'neighborhood', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] } 
+        ]
       });
       
       const bounds = new google.maps.LatLngBounds();
