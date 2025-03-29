@@ -9,13 +9,19 @@
     let redRenderer;
     let map;
     let lastParams = window.location.search;
-    
+
+    function getIconSize() {
+      const pixelRatio = window.devicePixelRatio || 1;
+      const baseSize = 60;
+      return new google.maps.Size(baseSize * pixelRatio, baseSize * pixelRatio);
+    }
+
     function initMap() {
       const params = new URLSearchParams(window.location.search);
-      const driver = (params.has("driverLat") && params.has("driverLng")) ? { lat: parseFloat(params.get("driverLat")), lng: parseFloat(params.get("driverLng")) } : null;
-      const pickup = (params.has("pickupLat") && params.has("pickupLng")) ? { lat: parseFloat(params.get("pickupLat")), lng: parseFloat(params.get("pickupLng")) } : null;
-      const dropoff = (params.has("dropoffLat") && params.has("dropoffLng")) ? { lat: parseFloat(params.get("dropoffLat")), lng: parseFloat(params.get("dropoffLng")) } : null;
-      
+      const driver = params.has("driverLat") && params.has("driverLng") ? { lat: parseFloat(params.get("driverLat")), lng: parseFloat(params.get("driverLng")) } : null;
+      const pickup = params.has("pickupLat") && params.has("pickupLng") ? { lat: parseFloat(params.get("pickupLat")), lng: parseFloat(params.get("pickupLng")) } : null;
+      const dropoff = params.has("dropoffLat") && params.has("dropoffLng") ? { lat: parseFloat(params.get("dropoffLat")), lng: parseFloat(params.get("dropoffLng")) } : null;
+
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 15,
         center: driver || pickup || dropoff,
@@ -24,23 +30,17 @@
           { elementType: 'geometry', stylers: [{ color: '#2E2E2E' }] },
           { elementType: 'labels.text.stroke', stylers: [{ color: '#2E2E2E' }] },
           { elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] },
-          { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#8A2BE2' }] }, 
-          { featureType: 'water', stylers: [{ color: '#1A1A1A' }] }, 
-          { featureType: 'landscape.natural', stylers: [{ color: '#1A1A1A' }] }, 
-          { featureType: 'administrative', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] }, 
-          { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] }, 
-          { featureType: 'locality', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] },
-          { featureType: 'country', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] }, 
-          { featureType: 'neighborhood', elementType: 'labels.text.fill', stylers: [{ color: '#FFFFFF' }] } 
+          { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#8A2BE2' }] },
+          { featureType: 'water', stylers: [{ color: '#1A1A1A' }] },
         ]
       });
-      
+
       const bounds = new google.maps.LatLngBounds();
       if (pickup) {
         new google.maps.Marker({
           position: pickup,
           map: map,
-          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png", scaledSize: new google.maps.Size(60,60) }
+          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png", scaledSize: getIconSize() }
         });
         bounds.extend(pickup);
       }
@@ -48,7 +48,7 @@
         new google.maps.Marker({
           position: dropoff,
           map: map,
-          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png", scaledSize: new google.maps.Size(60,60) }
+          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png", scaledSize: getIconSize() }
         });
         bounds.extend(dropoff);
       }
@@ -56,12 +56,12 @@
         driverMarker = new google.maps.Marker({
           position: driver,
           map: map,
-          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png", scaledSize: new google.maps.Size(60,60) }
+          icon: { url: "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png", scaledSize: getIconSize() }
         });
         bounds.extend(driver);
       }
       map.fitBounds(bounds);
-      
+
       directionsService = new google.maps.DirectionsService();
       blueRenderer = new google.maps.DirectionsRenderer({
         map: map,
@@ -75,7 +75,7 @@
         preserveViewport: true,
         polylineOptions: { strokeColor: "red", strokeWeight: 6 }
       });
-      
+
       if (driver) {
         if (pickup && dropoff) {
           calculateRoute(driver, dropoff, null, redRenderer);
@@ -87,15 +87,15 @@
         calculateRoute(pickup, dropoff, null, redRenderer);
       }
     }
-    
+
     function calculateRoute(origin, destination, waypoints, renderer) {
       let req = { origin: origin, destination: destination, travelMode: google.maps.TravelMode.DRIVING };
-      if(waypoints) { req.waypoints = waypoints; }
+      if (waypoints) { req.waypoints = waypoints; }
       directionsService.route(req, (response, status) => {
         if (status === "OK") { renderer.setDirections(response); }
       });
     }
-    
+
     function updateDriverLocation(pickup, dropoff) {
       const params = new URLSearchParams(window.location.search);
       const newDriver = { lat: parseFloat(params.get("driverLat")), lng: parseFloat(params.get("driverLng")) };
@@ -107,28 +107,28 @@
         calculateRoute(newDriver, pickup, null, blueRenderer);
       }
     }
-    
+
     function smoothMoveMarker(marker, newPosition) {
       const oldPosition = marker.getPosition();
       const frames = 30;
       let count = 0;
-      
+
       const deltaLat = (newPosition.lat - oldPosition.lat()) / frames;
       const deltaLng = (newPosition.lng - oldPosition.lng()) / frames;
-      
+
       const interval = setInterval(() => {
         count++;
         const nextLat = oldPosition.lat() + deltaLat * count;
         const nextLng = oldPosition.lng() + deltaLng * count;
-        
+
         marker.setPosition(new google.maps.LatLng(nextLat, nextLng));
-        
+
         if (count >= frames) {
           clearInterval(interval);
         }
       }, 50);
     }
-    
+
     setInterval(() => {
       if (window.location.search !== lastParams) {
         lastParams = window.location.search;
