@@ -11,8 +11,6 @@
     let lastParams = window.location.search;
 
     function getIconSize() {
-      const pixelRatio = window.devicePixelRatio || 1;
-      const baseSize = pixelRatio > 1.5 ? 20 : 30; 
       return new google.maps.Size(45, 45);
     }
 
@@ -23,6 +21,8 @@
       const dropoff = params.has("dropoffLat") && params.has("dropoffLng") ? { lat: parseFloat(params.get("dropoffLat")), lng: parseFloat(params.get("dropoffLng")) } : null;
 
       map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 15,
+        center: driver || pickup || dropoff,
         disableDefaultUI: true,
         styles: [
           { elementType: 'geometry', stylers: [{ color: '#2E2E2E' }] },
@@ -60,7 +60,7 @@
       }
 
       if (!bounds.isEmpty()) {
-        map.fitBounds(bounds); 
+        map.fitBounds(bounds);
       }
 
       directionsService = new google.maps.DirectionsService();
