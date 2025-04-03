@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Map Tracking</title>
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
@@ -11,6 +12,7 @@
     let driverMarker;
     let map;
     let routeControl;
+    let lastParams = window.location.search;
 
     function initMap() {
       const params = new URLSearchParams(window.location.search);
@@ -36,12 +38,11 @@
           L.latLng(pickupLat, pickupLng),
           L.latLng(dropoffLat, dropoffLng)
         ],
-        routeWhileDragging: true
+        routeWhileDragging: true,
+        lineOptions: { styles: [{ color: 'blue', weight: 4 }] }
       }).addTo(map);
 
-      setInterval(() => {
-        updateDriverLocation(driverLat, driverLng);
-      }, 2000);
+      setInterval(() => updateDriverLocation(driverLat, driverLng), 2000);
     }
 
     function updateDriverLocation(driverLat, driverLng) {
@@ -51,9 +52,17 @@
 
       const newLatLng = L.latLng(newDriverLat, newDriverLng);
       driverMarker.setLatLng(newLatLng);
-      
+
       routeControl.spliceWaypoints(0, 1, newLatLng);
     }
+
+    setInterval(() => {
+      if (window.location.search !== lastParams) {
+        lastParams = window.location.search;
+        updateDriverLocation();
+      }
+    }, 1000);
+
   </script>
   <style>
     html, body {
@@ -62,6 +71,7 @@
     }
     #map {
       height: 100%;
+      width: 100%;
     }
   </style>
 </head>
