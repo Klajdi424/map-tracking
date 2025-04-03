@@ -3,129 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Driver Map</title>
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <title>Map Tracking</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-  <style>
-    html, body { margin: 0; padding: 0; height: 100%; }
-    #map { height: 100%; width: 100%; }
-  </style>
   <script>
     let driverMarker;
     let map;
-    let driverRoute;
-    let lastParams = window.location.search;
-
-    function getIconSize() {
-      return [55, 55];
-    }
+    let routeControl;
 
     function initMap() {
       const params = new URLSearchParams(window.location.search);
-      const driver = params.has("driverLat") && params.has("driverLng") ? { lat: parseFloat(params.get("driverLat")), lng: parseFloat(params.get("driverLng")) } : null;
-      const pickup = params.has("pickupLat") && params.has("pickupLng") ? { lat: parseFloat(params.get("pickupLat")), lng: parseFloat(params.get("pickupLng")) } : null;
-      const dropoff = params.has("dropoffLat") && params.has("dropoffLng") ? { lat: parseFloat(params.get("dropoffLat")), lng: parseFloat(params.get("dropoffLng")) } : null;
+      const driverLat = params.has("driverLat") ? parseFloat(params.get("driverLat")) : 41.3275;
+      const driverLng = params.has("driverLng") ? parseFloat(params.get("driverLng")) : 19.8189;
+      const pickupLat = params.has("pickupLat") ? parseFloat(params.get("pickupLat")) : 41.3208;
+      const pickupLng = params.has("pickupLng") ? parseFloat(params.get("pickupLng")) : 19.8171;
+      const dropoffLat = params.has("dropoffLat") ? parseFloat(params.get("dropoffLat")) : 41.3285;
+      const dropoffLng = params.has("dropoffLng") ? parseFloat(params.get("dropoffLng")) : 19.8125;
 
-      map = L.map('map').setView(driver || pickup || dropoff, 15);
+      map = L.map('map').setView([driverLat, driverLng], 15);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-      const bounds = new L.LatLngBounds();
-      
-      if (pickup) {
-        L.marker(pickup, { icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png', iconSize: getIconSize() }) }).addTo(map);
-        bounds.extend(pickup);
-      }
-      if (dropoff) {
-        L.marker(dropoff, { icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png', iconSize: getIconSize() }) }).addTo(map);
-        bounds.extend(dropoff);
-      }
+      driverMarker = L.marker([driverLat, driverLng]).addTo(map);
+      driverMarker.bindPopup("Driver").openPopup();
 
-      if (driver) {
-        driverMarker = L.marker(driver, { icon: L.icon({ iconUrl: 'https://raw.githubusercontent.com/Klajdi424/image/main/driver.png', iconSize: getIconSize() }) }).addTo(map);
-        bounds.extend(driver);
-      }
+      L.marker([pickupLat, pickupLng]).addTo(map).bindPopup("Pickup");
+      L.marker([dropoffLat, dropoffLng]).addTo(map).bindPopup("Dropoff");
 
-      if (!bounds.isEmpty()) {
-        map.fitBounds(bounds);
-      }
-
-      // Call to calculate the route
-      if (driver) {
-        if (pickup && dropoff) {
-          calculateRoute(driver, dropoff);
-        } else if (pickup && !dropoff) {
-          calculateRoute(driver, pickup);
-        }
-        setInterval(() => updateDriverLocation(pickup, dropoff), 2000);
-      } else if (pickup && dropoff) {
-        calculateRoute(pickup, dropoff);
-      }
-    }
-
-    function calculateRoute(origin, destination) {
-      if (driverRoute) {
-        map.removeControl(driverRoute);
-      }
-
-      driverRoute = L.Routing.control({
+      routeControl = L.Routing.control({
         waypoints: [
-          L.latLng(origin.lat, origin.lng),
-          L.latLng(destination.lat, destination.lng)
+          L.latLng(pickupLat, pickupLng),
+          L.latLng(dropoffLat, dropoffLng)
         ],
-        routeWhileDragging: true,
-        createMarker: function() { return null; },
-        lineOptions: {
-          styles: [{ color: 'red', weight: 6 }]
-        }
+        routeWhileDragging: true
       }).addTo(map);
+
+      setInterval(() => {
+        updateDriverLocation(driverLat, driverLng);
+      }, 2000);
     }
 
-    function updateDriverLocation(pickup, dropoff) {
+    function updateDriverLocation(driverLat, driverLng) {
       const params = new URLSearchParams(window.location.search);
-      const newDriver = { lat: parseFloat(params.get("driverLat")), lng: parseFloat(params.get("driverLng")) };
+      const newDriverLat = params.has("driverLat") ? parseFloat(params.get("driverLat")) : driverLat;
+      const newDriverLng = params.has("driverLng") ? parseFloat(params.get("driverLng")) : driverLng;
 
-      if (driverMarker) {
-        smoothMoveMarker(driverMarker, newDriver);
-      }
-      if (dropoff) {
-        calculateRoute(newDriver, dropoff);
-      }
-      else if (pickup) {
-        calculateRoute(newDriver, pickup);
-      }
+      const newLatLng = L.latLng(newDriverLat, newDriverLng);
+      driverMarker.setLatLng(newLatLng);
+      
+      routeControl.spliceWaypoints(0, 1, newLatLng);
     }
-
-    function smoothMoveMarker(marker, newPosition) {
-      const oldPosition = marker.getLatLng();
-      const frames = 30;
-      let count = 0;
-
-      const deltaLat = (newPosition.lat - oldPosition.lat) / frames;
-      const deltaLng = (newPosition.lng - oldPosition.lng) / frames;
-
-      const interval = setInterval(() => {
-        count++;
-        const nextLat = oldPosition.lat + deltaLat * count;
-        const nextLng = oldPosition.lng + deltaLng * count;
-
-        marker.setLatLng([nextLat, nextLng]);
-
-        if (count >= frames) {
-          clearInterval(interval);
-        }
-      }, 50);
-    }
-
-    setInterval(() => {
-      if (window.location.search !== lastParams) {
-        lastParams = window.location.search;
-        updateDriverLocation();
-      }
-    }, 1000);
   </script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    #map {
+      height: 100%;
+    }
+  </style>
 </head>
 <body onload="initMap()">
   <div id="map"></div>
