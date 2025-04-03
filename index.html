@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Map Tracking</title>
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
@@ -27,10 +28,10 @@
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
       driverMarker = L.marker([driverLat, driverLng]).addTo(map);
-      driverMarker.bindPopup("Driver").openPopup();
+      driverMarker.bindPopup("<b>Driver</b>").openPopup();
 
-      L.marker([pickupLat, pickupLng]).addTo(map).bindPopup("Pickup");
-      L.marker([dropoffLat, dropoffLng]).addTo(map).bindPopup("Dropoff");
+      L.marker([pickupLat, pickupLng]).addTo(map).bindPopup("<b>Pickup</b>");
+      L.marker([dropoffLat, dropoffLng]).addTo(map).bindPopup("<b>Dropoff</b>");
 
       routeControl = L.Routing.control({
         waypoints: [
