@@ -16,12 +16,12 @@
 
       map = L.map("map").setView(driver || pickup || dropoff, 15);
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      if (pickup) L.marker(pickup, { icon: getIcon("pickup.png") }).addTo(map);
-      if (dropoff) L.marker(dropoff, { icon: getIcon("dropoff.png") }).addTo(map);
+      if (pickup) L.marker(pickup, { icon: getIcon("pickup2.png") }).addTo(map);
+      if (dropoff) L.marker(dropoff, { icon: getIcon("nobackround.png") }).addTo(map);
       if (driver) {
         driverMarker = L.marker(driver, { icon: getIcon("driver.png") }).addTo(map);
       }
