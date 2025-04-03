@@ -16,11 +16,9 @@
 
       map = L.map("map").setView(driver || pickup || dropoff, 15);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
-
-      applyCustomMapStyle();
 
       if (pickup) L.marker(pickup, { icon: getIcon("pickup.png") }).addTo(map);
       if (dropoff) L.marker(dropoff, { icon: getIcon("dropoff.png") }).addTo(map);
@@ -37,10 +35,6 @@
       }
 
       setInterval(() => updateDriverLocation(pickup, dropoff), 2000);
-    }
-
-    function applyCustomMapStyle() {
-      document.querySelector(".leaflet-container").style.filter = "brightness(0.8) contrast(1.2)";
     }
 
     function getRoute(start, end, color) {
@@ -79,7 +73,6 @@
   <style>
     html, body { margin: 0; padding: 0; height: 100%; }
     #map { height: 100%; width: 100%; }
-    .leaflet-container { background: #2E2E2E; }
   </style>
 </head>
 <body onload="initMap()">
