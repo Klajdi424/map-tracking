@@ -20,10 +20,10 @@
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      if (pickup) L.marker(pickup, { icon: getIcon("pickup2.png") }).addTo(map);
-      if (dropoff) L.marker(dropoff, { icon: getIcon("nobackround.png") }).addTo(map);
+      if (pickup) L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map);
+      if (dropoff) L.marker(dropoff, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png") }).addTo(map);
       if (driver) {
-        driverMarker = L.marker(driver, { icon: getIcon("driver.png") }).addTo(map);
+        driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map);
       }
 
       if (driver && pickup) {
@@ -63,9 +63,9 @@
       }
     }
 
-    function getIcon(filename) {
+    function getIcon(url) {
       return L.icon({
-        iconUrl: `https://raw.githubusercontent.com/Klajdi424/image/main/${filename}`,
+        iconUrl: url,
         iconSize: [55, 55]
       });
     }
