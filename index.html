@@ -28,10 +28,10 @@
         driverMarker = L.marker(driver, { icon: getIcon("driver.png") }).addTo(map);
       }
 
-      if (driver && dropoff) {
-        getRoute(driver, dropoff, "red");
-      } else if (driver && pickup) {
+      if (driver && pickup) {
         getRoute(driver, pickup, "blue");
+      } else if (driver && dropoff) {
+        getRoute(driver, dropoff, "red");
       } else if (pickup && dropoff) {
         getRoute(pickup, dropoff, "purple");
       }
@@ -69,9 +69,9 @@
       }
     }
 
-    function getIcon(url) {
+    function getIcon(filename) {
       return L.icon({
-        iconUrl: `https://raw.githubusercontent.com/Klajdi424/image/main/${url}`,
+        iconUrl: `https://raw.githubusercontent.com/Klajdi424/image/main/${filename}`,
         iconSize: [55, 55]
       });
     }
