@@ -7,7 +7,7 @@
     let map;
     let driverMarker;
     let routeLayer;
-    
+
     function initMap() {
       const params = new URLSearchParams(window.location.search);
       const driver = params.has("driverLat") && params.has("driverLng") ? [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))] : null;
@@ -15,10 +15,12 @@
       const dropoff = params.has("dropoffLat") && params.has("dropoffLng") ? [parseFloat(params.get("dropoffLat")), parseFloat(params.get("dropoffLng"))] : null;
 
       map = L.map("map").setView(driver || pickup || dropoff, 15);
-      
+
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
+
+      applyCustomMapStyle();
 
       if (pickup) L.marker(pickup, { icon: getIcon("pickup.png") }).addTo(map);
       if (dropoff) L.marker(dropoff, { icon: getIcon("dropoff.png") }).addTo(map);
@@ -31,10 +33,14 @@
       } else if (driver && pickup) {
         getRoute(driver, pickup, "blue");
       } else if (pickup && dropoff) {
-        getRoute(pickup, dropoff, "red");
+        getRoute(pickup, dropoff, "purple");
       }
 
       setInterval(() => updateDriverLocation(pickup, dropoff), 2000);
+    }
+
+    function applyCustomMapStyle() {
+      document.querySelector(".leaflet-container").style.filter = "brightness(0.8) contrast(1.2)";
     }
 
     function getRoute(start, end, color) {
@@ -55,7 +61,7 @@
       if (driverMarker) {
         driverMarker.setLatLng(newDriver);
       }
-      
+
       if (dropoff) {
         getRoute(newDriver, dropoff, "red");
       } else if (pickup) {
@@ -73,6 +79,7 @@
   <style>
     html, body { margin: 0; padding: 0; height: 100%; }
     #map { height: 100%; width: 100%; }
+    .leaflet-container { background: #2E2E2E; }
   </style>
 </head>
 <body onload="initMap()">
