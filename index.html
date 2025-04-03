@@ -3,78 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Map Tracking</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <title>Map with Routes and Markers</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-  <script>
-    let driverMarker;
-    let map;
-    let routeControl;
-    let lastParams = window.location.search;
-
-    function initMap() {
-      const params = new URLSearchParams(window.location.search);
-      const driverLat = params.has("driverLat") ? parseFloat(params.get("driverLat")) : 41.3275;
-      const driverLng = params.has("driverLng") ? parseFloat(params.get("driverLng")) : 19.8189;
-      const pickupLat = params.has("pickupLat") ? parseFloat(params.get("pickupLat")) : 41.3208;
-      const pickupLng = params.has("pickupLng") ? parseFloat(params.get("pickupLng")) : 19.8171;
-      const dropoffLat = params.has("dropoffLat") ? parseFloat(params.get("dropoffLat")) : 41.3285;
-      const dropoffLng = params.has("dropoffLng") ? parseFloat(params.get("dropoffLng")) : 19.8125;
-
-      map = L.map('map').setView([driverLat, driverLng], 15);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-      driverMarker = L.marker([driverLat, driverLng]).addTo(map);
-      driverMarker.bindPopup("<b>Driver</b>").openPopup();
-
-      L.marker([pickupLat, pickupLng]).addTo(map).bindPopup("<b>Pickup</b>");
-      L.marker([dropoffLat, dropoffLng]).addTo(map).bindPopup("<b>Dropoff</b>");
-
-      routeControl = L.Routing.control({
-        waypoints: [
-          L.latLng(pickupLat, pickupLng),
-          L.latLng(dropoffLat, dropoffLng)
-        ],
-        routeWhileDragging: true,
-        lineOptions: { styles: [{ color: 'blue', weight: 4 }] }
-      }).addTo(map);
-
-      setInterval(() => updateDriverLocation(driverLat, driverLng), 2000);
-    }
-
-    function updateDriverLocation(driverLat, driverLng) {
-      const params = new URLSearchParams(window.location.search);
-      const newDriverLat = params.has("driverLat") ? parseFloat(params.get("driverLat")) : driverLat;
-      const newDriverLng = params.has("driverLng") ? parseFloat(params.get("driverLng")) : driverLng;
-
-      const newLatLng = L.latLng(newDriverLat, newDriverLng);
-      driverMarker.setLatLng(newLatLng);
-
-      routeControl.spliceWaypoints(0, 1, newLatLng);
-    }
-
-    setInterval(() => {
-      if (window.location.search !== lastParams) {
-        lastParams = window.location.search;
-        updateDriverLocation();
-      }
-    }, 1000);
-
-  </script>
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-    #map {
-      height: 100%;
-      width: 100%;
-    }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    #map { height: 100%; width: 100%; }
   </style>
 </head>
-<body onload="initMap()">
+<body>
   <div id="map"></div>
+  <script>
+    const map = L.map('map').setView([41.3275, 19.8189], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    const driverIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/Klajdi424/image/main/driver.png',
+      iconSize: [50, 50],
+      iconAnchor: [25, 50]
+    });
+    const pickupIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png',
+      iconSize: [50, 50],
+      iconAnchor: [25, 50]
+    });
+    const dropoffIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png',
+      iconSize: [50, 50],
+      iconAnchor: [25, 50]
+    });
+
+    const driver = { lat: 41.3275, lng: 19.8189 };
+    const pickup = { lat: 41.3275, lng: 19.8200 };
+    const dropoff = { lat: 41.3280, lng: 19.8210 };
+    const driverMarker = L.marker([driver.lat, driver.lng], { icon: driverIcon }).addTo(map);
+    const pickupMarker = L.marker([pickup.lat, pickup.lng], { icon: pickupIcon }).addTo(map);
+    const dropoffMarker = L.marker([dropoff.lat, dropoff.lng], { icon: dropoffIcon }).addTo(map);
+
+    const blueRoute = L.Routing.control({
+      waypoints: [
+        L.latLng(driver.lat, driver.lng),
+        L.latLng(pickup.lat, pickup.lng)
+      ],
+      routeWhileDragging: true,
+      lineOptions: { styles: [{ color: 'blue', weight: 6 }] },
+      showAlternatives: false 
+    }).addTo(map);
+
+    const redRoute = L.Routing.control({
+      waypoints: [
+        L.latLng(pickup.lat, pickup.lng),
+        L.latLng(dropoff.lat, dropoff.lng)
+      ],
+      routeWhileDragging: true,
+      lineOptions: { styles: [{ color: 'red', weight: 6 }] },
+      showAlternatives: false 
+    }).addTo(map);
+
+    const bounds = L.latLngBounds([driverMarker.getLatLng(), pickupMarker.getLatLng(), dropoffMarker.getLatLng()]);
+    map.fitBounds(bounds);
+  </script>
 </body>
 </html>
