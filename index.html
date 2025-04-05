@@ -34,6 +34,7 @@
         getRoute(pickup, dropoff, "purple", "pickupToDropoff");
       }
 
+      updateDriverLocation(pickup, dropoff);
       setInterval(() => updateDriverLocation(pickup, dropoff), 500);
     }
 
@@ -47,6 +48,7 @@
           routeLayers[key] = L.geoJSON(data.routes[0].geometry, {
             style: { color: color, weight: 6 }
           }).addTo(map);
+          map.invalidateSize(); 
         });
     }
 
