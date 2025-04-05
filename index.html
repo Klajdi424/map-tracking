@@ -14,7 +14,7 @@
       const pickup = params.has("pickupLat") && params.has("pickupLng") ? [parseFloat(params.get("pickupLat")), parseFloat(params.get("pickupLng"))] : null;
       const dropoff = params.has("dropoffLat") && params.has("dropoffLng") ? [parseFloat(params.get("dropoffLat")), parseFloat(params.get("dropoffLng"))] : null;
 
-      map = L.map("map").setView(driver || pickup || dropoff, 15);
+      map = L.map("map", { zoomAnimation: false }).setView(driver || pickup || dropoff, 15);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors'
