@@ -26,15 +26,15 @@
         driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map);
       }
 
-      if (driver && pickup) {
-        getRoute(driver, pickup, "blue", "driverToPickup");
-      } else if (driver && dropoff) {
-        getRoute(driver, dropoff, "red", "driverToDropoff");
-      } else if (pickup && dropoff) {
+      if (driver && pickup && !dropoff) {
+        getRoute(driver, pickup, "purple", "driverToPickup");
+      } else if (driver && dropoff && !pickup) {
+        getRoute(driver, dropoff, "purple", "driverToDropoff");
+      } else if (pickup && dropoff && !driver) {
         getRoute(pickup, dropoff, "purple", "pickupToDropoff");
       }
 
-      setInterval(() => updateDriverLocation(pickup, dropoff), 2000);
+      setInterval(() => updateDriverLocation(pickup, dropoff), 500);
     }
 
     function getRoute(start, end, color, key) {
@@ -58,10 +58,10 @@
         driverMarker.setLatLng(newDriver);
       }
 
-      if (dropoff) {
-        getRoute(newDriver, dropoff, "red", "driverToDropoff");
-      } else if (pickup) {
-        getRoute(newDriver, pickup, "blue", "driverToPickup");
+      if (dropoff && !pickup) {
+        getRoute(newDriver, dropoff, "purple", "driverToDropoff");
+      } else if (pickup && !dropoff) {
+        getRoute(newDriver, pickup, "purple", "driverToPickup");
       }
     }
 
