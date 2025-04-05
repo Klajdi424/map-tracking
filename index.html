@@ -26,12 +26,17 @@
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
-  
+      
       if (pickup) L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map);
       if (dropoff) L.marker(dropoff, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png") }).addTo(map);
       if (driver) {
         driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map);
       }
+      
+      setTimeout(() => {
+        map.invalidateSize();
+        window.dispatchEvent(new Event("resize"));
+      }, 100);
   
       if (driver && pickup && !dropoff) {
         getRoute(driver, pickup, "purple", "driverToPickup");
