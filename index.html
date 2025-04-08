@@ -1,20 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Map Tracking</title>
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; }
+    #map { height: 100%; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
   <script>
+    // Initialize variables
     let map;
     let driverMarker;
     let routeLayers = {};
     let lastDriverRoutePos = {};
     const threshold = 0.0001;
 
+    // Check if the driver has moved enough to update the route
     function hasMovedEnough(oldPos, newPos, th) {
       if (!oldPos) return true;
       return (Math.abs(oldPos[0] - newPos[0]) > th) || (Math.abs(oldPos[1] - newPos[1]) > th);
     }
 
+    // Save the map's current center and zoom level to localStorage
     function saveMapState() {
       const mapState = {
         center: map.getCenter(),
@@ -23,6 +34,7 @@
       localStorage.setItem('mapState', JSON.stringify(mapState));
     }
 
+    // Restore the map's center and zoom level from localStorage
     function restoreMapState() {
       const mapState = JSON.parse(localStorage.getItem('mapState'));
       if (mapState) {
@@ -30,8 +42,10 @@
       }
     }
 
+    // Initialize the map
     function initMap() {
       const params = new URLSearchParams(window.location.search);
+
       const driver = params.has("driverLat") && params.has("driverLng") 
         ? [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))] 
         : null;
@@ -43,8 +57,11 @@
         : null;
 
       map = L.map("map");
+
+      // Restore zoom and center position if available
       restoreMapState();
 
+      // Add OpenStreetMap tiles
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
@@ -59,11 +76,13 @@
         driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map);
       }
 
+      // Ensure the map is properly rendered
       setTimeout(() => {
         map.invalidateSize();
         window.dispatchEvent(new Event("resize"));
       }, 100);
 
+      // Determine which route(s) to display
       if (driver && pickup && !dropoff) {
         getRoute(driver, pickup, "purple", "driverToPickup");
         lastDriverRoutePos["driverToPickup"] = driver;
@@ -74,13 +93,16 @@
         getRoute(pickup, dropoff, "purple", "pickupToDropoff");
       }
 
+      // Update the driver's location dynamically
       updateDriverLocation(pickup, dropoff);
       setInterval(() => updateDriverLocation(pickup, dropoff), 1000);
 
-      map.on('zoomend', saveMapState);
-      map.on('moveend', saveMapState);
+      // Save map state on zoom or move
+      map.on("zoomend", saveMapState);
+      map.on("moveend", saveMapState);
     }
 
+    // Fetch and display a route between two points
     function getRoute(start, end, color, key) {
       fetch(`https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`)
         .then(response => response.json())
@@ -95,9 +117,14 @@
         });
     }
 
+    // Update the driver's location and route dynamically
     function updateDriverLocation(pickup, dropoff) {
       const params = new URLSearchParams(window.location.search);
-      const newDriver = [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))];
+      const newDriver = params.has("driverLat") && params.has("driverLng")
+        ? [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))]
+        : null;
+
+      if (!newDriver) return;
 
       if (driverMarker) {
         driverMarker.setLatLng(newDriver);
@@ -116,19 +143,16 @@
       }
     }
 
+    // Create a Leaflet icon
     function getIcon(url) {
       return L.icon({
         iconUrl: url,
         iconSize: [55, 55]
       });
     }
+
+    // Initialize the map on page load
+    document.addEventListener("DOMContentLoaded", initMap);
   </script>
-  <style>
-    html, body { margin: 0; padding: 0; height: 100%; }
-    #map { height: 100%; width: 100%; }
-  </style>
-</head>
-<body onload="initMap()">
-  <div id="map"></div>
 </body>
 </html>
