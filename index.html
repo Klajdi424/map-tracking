@@ -15,6 +15,21 @@
       return (Math.abs(oldPos[0] - newPos[0]) > th) || (Math.abs(oldPos[1] - newPos[1]) > th);
     }
 
+    function saveMapState() {
+      const mapState = {
+        center: map.getCenter(),
+        zoom: map.getZoom()
+      };
+      localStorage.setItem('mapState', JSON.stringify(mapState));
+    }
+
+    function restoreMapState() {
+      const mapState = JSON.parse(localStorage.getItem('mapState'));
+      if (mapState) {
+        map.setView(mapState.center, mapState.zoom, { animate: false });
+      }
+    }
+
     function initMap() {
       const params = new URLSearchParams(window.location.search);
       const driver = params.has("driverLat") && params.has("driverLng") 
@@ -28,7 +43,7 @@
         : null;
 
       map = L.map("map");
-      map.setView(driver || pickup || dropoff, 15, { animate: false });
+      restoreMapState();
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors'
@@ -61,6 +76,9 @@
 
       updateDriverLocation(pickup, dropoff);
       setInterval(() => updateDriverLocation(pickup, dropoff), 1000);
+
+      map.on('zoomend', saveMapState);
+      map.on('moveend', saveMapState);
     }
 
     function getRoute(start, end, color, key) {
