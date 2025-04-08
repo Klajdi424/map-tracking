@@ -19,92 +19,14 @@
     let lastDriverRoutePos = {};
     const threshold = 0.0001;
 
-    // Check if the driver has moved enough to update the route
+    // Default fallback center (New York City)
+    const defaultCenter = [40.748817, -73.985428];
+    const defaultZoom = 13;
+
+    // Check if the driver has moved enough
     function hasMovedEnough(oldPos, newPos, th) {
       if (!oldPos) return true;
       return (Math.abs(oldPos[0] - newPos[0]) > th) || (Math.abs(oldPos[1] - newPos[1]) > th);
-    }
-
-    // Save the map's current center and zoom level to localStorage
-    function saveMapState() {
-      const mapState = {
-        center: map.getCenter(),
-        zoom: map.getZoom()
-      };
-      localStorage.setItem('mapState', JSON.stringify(mapState));
-    }
-
-    // Restore the map's center and zoom level from localStorage
-    function restoreMapState() {
-      const mapState = JSON.parse(localStorage.getItem('mapState'));
-      if (mapState) {
-        map.setView(mapState.center, mapState.zoom, { animate: false });
-      }
-    }
-
-    // Initialize the map
-    function initMap() {
-      const params = new URLSearchParams(window.location.search);
-
-      const driver = params.has("driverLat") && params.has("driverLng") 
-        ? [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))] 
-        : null;
-      const pickup = params.has("pickupLat") && params.has("pickupLng") 
-        ? [parseFloat(params.get("pickupLat")), parseFloat(params.get("pickupLng"))] 
-        : null;
-      const dropoff = params.has("dropoffLat") && params.has("dropoffLng") 
-        ? [parseFloat(params.get("dropoffLat")), parseFloat(params.get("dropoffLng"))] 
-        : null;
-
-      // Default center if no parameters are provided
-      const defaultCenter = [40.748817, -73.985428]; // New York City
-
-      map = L.map("map");
-
-      // Restore zoom and center position if available, otherwise use default
-      if (!restoreMapState()) {
-        map.setView(defaultCenter, 13);
-      }
-
-      // Add OpenStreetMap tiles
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-
-      if (pickup) {
-        L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map);
-      }
-      if (dropoff) {
-        L.marker(dropoff, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png") }).addTo(map);
-      }
-      if (driver) {
-        driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map);
-      }
-
-      // Ensure the map is properly rendered
-      setTimeout(() => {
-        map.invalidateSize();
-        window.dispatchEvent(new Event("resize"));
-      }, 100);
-
-      // Determine which route(s) to display
-      if (driver && pickup && !dropoff) {
-        getRoute(driver, pickup, "purple", "driverToPickup");
-        lastDriverRoutePos["driverToPickup"] = driver;
-      } else if (driver && dropoff && !pickup) {
-        getRoute(driver, dropoff, "purple", "driverToDropoff");
-        lastDriverRoutePos["driverToDropoff"] = driver;
-      } else if (pickup && dropoff && !driver) {
-        getRoute(pickup, dropoff, "purple", "pickupToDropoff");
-      }
-
-      // Update the driver's location dynamically
-      updateDriverLocation(pickup, dropoff);
-      setInterval(() => updateDriverLocation(pickup, dropoff), 1000);
-
-      // Save map state on zoom or move
-      map.on("zoomend", saveMapState);
-      map.on("moveend", saveMapState);
     }
 
     // Fetch and display a route between two points
@@ -123,29 +45,48 @@
         .catch(error => console.error("Error fetching route:", error));
     }
 
-    // Update the driver's location and route dynamically
-    function updateDriverLocation(pickup, dropoff) {
+    // Initialize the map
+    function initMap() {
       const params = new URLSearchParams(window.location.search);
-      const newDriver = params.has("driverLat") && params.has("driverLng")
-        ? [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))]
+
+      const driver = params.has("driverLat") && params.has("driverLng") 
+        ? [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))] 
+        : null;
+      const pickup = params.has("pickupLat") && params.has("pickupLng") 
+        ? [parseFloat(params.get("pickupLat")), parseFloat(params.get("pickupLng"))] 
+        : null;
+      const dropoff = params.has("dropoffLat") && params.has("dropoffLng") 
+        ? [parseFloat(params.get("dropoffLat")), parseFloat(params.get("dropoffLng"))] 
         : null;
 
-      if (!newDriver) return;
+      // Initialize the map with a default center
+      map = L.map("map").setView(driver || pickup || dropoff || defaultCenter, defaultZoom);
 
-      if (driverMarker) {
-        driverMarker.setLatLng(newDriver);
+      // Add OpenStreetMap tiles
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Add markers
+      if (pickup) {
+        L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map);
+      }
+      if (dropoff) {
+        L.marker(dropoff, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png") }).addTo(map);
+      }
+      if (driver) {
+        driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map);
       }
 
-      if (dropoff && !pickup) {
-        if (hasMovedEnough(lastDriverRoutePos["driverToDropoff"], newDriver, threshold)) {
-          getRoute(newDriver, dropoff, "purple", "driverToDropoff");
-          lastDriverRoutePos["driverToDropoff"] = newDriver;
-        }
-      } else if (pickup && !dropoff) {
-        if (hasMovedEnough(lastDriverRoutePos["driverToPickup"], newDriver, threshold)) {
-          getRoute(newDriver, pickup, "purple", "driverToPickup");
-          lastDriverRoutePos["driverToPickup"] = newDriver;
-        }
+      // Add routes if parameters are provided
+      if (driver && pickup && !dropoff) {
+        getRoute(driver, pickup, "purple", "driverToPickup");
+        lastDriverRoutePos["driverToPickup"] = driver;
+      } else if (driver && dropoff && !pickup) {
+        getRoute(driver, dropoff, "purple", "driverToDropoff");
+        lastDriverRoutePos["driverToDropoff"] = driver;
+      } else if (pickup && dropoff && !driver) {
+        getRoute(pickup, dropoff, "purple", "pickupToDropoff");
       }
     }
 
