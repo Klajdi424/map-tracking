@@ -31,37 +31,34 @@
   </div>
   <div id="map"></div>
   <script>
-    // Initialize variables
     let map;
     let driverMarker;
     let routeLayers = {};
     let lastDriverRoutePos = {};
     const threshold = 0.0001;
 
-    // Default fallback center (New York City)
     const defaultCenter = [40.748817, -73.985428];
     const defaultZoom = 13;
 
-    // Show loading indicator
     function showLoading() {
       document.getElementById('loading').style.display = 'block';
     }
 
-    // Hide loading indicator
     function hideLoading() {
       document.getElementById('loading').style.display = 'none';
     }
 
-    // Check if the driver has moved enough
     function hasMovedEnough(oldPos, newPos, th) {
       if (!oldPos) return true;
       return (Math.abs(oldPos[0] - newPos[0]) > th) || (Math.abs(oldPos[1] - newPos[1]) > th);
     }
 
-    // Fetch and display a route between two points
     function getRoute(start, end, color, key) {
       showLoading();
-      fetch(`https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=simplified&geometries=geojson`)
+      const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=simplified&geometries=geojson`;
+
+      fetch(proxyUrl + osrmUrl)
         .then(response => response.json())
         .then(data => {
           if (routeLayers[key]) {
@@ -71,9 +68,8 @@
             style: { color: color, weight: 6 }
           }).addTo(map);
 
-          // Fit bounds to the route
           const routeBounds = L.geoJSON(data.routes[0].geometry).getBounds();
-          map.fitBounds(routeBounds, { padding: [50, 50] });
+          map.fitBounds(routeBounds, { padding: [100, 100] });
         })
         .catch(error => console.error("Error fetching route:", error))
         .finally(() => {
@@ -81,7 +77,6 @@
         });
     }
 
-    // Update the driver's location and route dynamically
     function updateDriverLocation(pickup, dropoff) {
       const params = new URLSearchParams(window.location.search);
       const newDriver = params.has("driverLat") && params.has("driverLng")
@@ -107,7 +102,6 @@
       }
     }
 
-    // Initialize the map
     function initMap() {
       showLoading();
 
@@ -123,15 +117,12 @@
         ? [parseFloat(params.get("dropoffLat")), parseFloat(params.get("dropoffLng"))] 
         : null;
 
-      // Initialize the map with a default center
       map = L.map("map").setView(driver || pickup || dropoff || defaultCenter, defaultZoom);
 
-      // Add OpenStreetMap tiles
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      // Add markers
       if (pickup) {
         L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map);
       }
@@ -142,7 +133,6 @@
         driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map);
       }
 
-      // Add routes if parameters are provided
       if (driver && pickup && !dropoff) {
         getRoute(driver, pickup, "purple", "driverToPickup");
         lastDriverRoutePos["driverToPickup"] = driver;
@@ -156,15 +146,13 @@
       hideLoading();
     }
 
-    // Create a Leaflet icon
     function getIcon(url) {
       return L.icon({
         iconUrl: url,
-        iconSize: [40, 40] // Smaller icon size for better performance
+        iconSize: [40, 40]
       });
     }
 
-    // Initialize the map on page load
     document.addEventListener("DOMContentLoaded", initMap);
   </script>
 </body>
