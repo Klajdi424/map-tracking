@@ -61,6 +61,40 @@
       return marker;
     }
 
+    // Decode the polyline from HERE API response
+    function decodePolyline(encodedPolyline) {
+      const coords = [];
+      const factor = Math.pow(10, 5);
+      let index = 0,
+        lat = 0,
+        lng = 0;
+
+      while (index < encodedPolyline.length) {
+        let b, shift = 0, result = 0;
+        do {
+          b = encodedPolyline.charCodeAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        const deltaLat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lat += deltaLat;
+
+        shift = 0;
+        result = 0;
+        do {
+          b = encodedPolyline.charCodeAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        const deltaLng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lng += deltaLng;
+
+        coords.push({ lat: lat / factor, lng: lng / factor });
+      }
+
+      return coords;
+    }
+
     function drawRoute(start, end, color) {
       showLoading();
       const routingParameters = {
@@ -73,23 +107,23 @@
       router.calculateRoute(routingParameters, (result) => {
         if (result.routes && result.routes.length > 0) {
           const route = result.routes[0];
-          const lineString = new H.geo.LineString();
+          const polyline = route.sections[0].polyline; // Get polyline from section
+          const decodedPolyline = decodePolyline(polyline); // Decode polyline
 
-          route.sections.forEach((section) => {
-            section.polyline.split(" ").forEach((point) => {
-              const [lat, lng] = point.split(",");
-              lineString.pushLatLngAlt(lat, lng);
-            });
+          const lineString = new H.geo.LineString();
+          decodedPolyline.forEach((point) => {
+            lineString.pushLatLngAlt(point.lat, point.lng); // Add points to LineString
           });
 
+          // Render the polyline on the map
           const routeLine = new H.map.Polyline(lineString, {
             style: { strokeColor: color, lineWidth: 6 }
           });
 
           map.addObject(routeLine);
-          map.getViewModel().setLookAtData({ bounds: routeLine.getBoundingBox() });
+          map.getViewModel().setLookAtData({ bounds: routeLine.getBoundingBox() }); // Adjust zoom to fit route
         } else {
-          console.error("No routes found!");
+          console.error("No routes found in HERE API response!");
         }
         hideLoading();
       }, (error) => {
