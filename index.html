@@ -56,10 +56,15 @@
         ? [parseFloat(params.get("dropoffLat")), parseFloat(params.get("dropoffLng"))] 
         : null;
 
+      // Default center if no parameters are provided
+      const defaultCenter = [40.748817, -73.985428]; // New York City
+
       map = L.map("map");
 
-      // Restore zoom and center position if available
-      restoreMapState();
+      // Restore zoom and center position if available, otherwise use default
+      if (!restoreMapState()) {
+        map.setView(defaultCenter, 13);
+      }
 
       // Add OpenStreetMap tiles
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -114,7 +119,8 @@
             style: { color: color, weight: 6 }
           }).addTo(map);
           map.invalidateSize();
-        });
+        })
+        .catch(error => console.error("Error fetching route:", error));
     }
 
     // Update the driver's location and route dynamically
