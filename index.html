@@ -64,20 +64,22 @@
     function drawRoute(start, end, color) {
       showLoading();
       const routingParameters = {
-        mode: "fastest;car",
-        waypoint0: `geo!${start.lat},${start.lng}`,
-        waypoint1: `geo!${end.lat},${end.lng}`,
-        representation: "display"
+        transportMode: "car", // Valid transport mode
+        origin: `${start.lat},${start.lng}`, // Start point
+        destination: `${end.lat},${end.lng}`, // End point
+        return: "polyline" // Required to get route geometry
       };
 
       router.calculateRoute(routingParameters, (result) => {
-        if (result.response) {
-          const route = result.response.route[0];
+        if (result.routes && result.routes.length > 0) {
+          const route = result.routes[0];
           const lineString = new H.geo.LineString();
 
-          route.shape.forEach((point) => {
-            const [lat, lng] = point.split(",");
-            lineString.pushLatLngAlt(lat, lng);
+          route.sections.forEach((section) => {
+            section.polyline.split(" ").forEach((point) => {
+              const [lat, lng] = point.split(",");
+              lineString.pushLatLngAlt(lat, lng);
+            });
           });
 
           const routeLine = new H.map.Polyline(lineString, {
@@ -86,6 +88,8 @@
 
           map.addObject(routeLine);
           map.getViewModel().setLookAtData({ bounds: routeLine.getBoundingBox() });
+        } else {
+          console.error("No routes found!");
         }
         hideLoading();
       }, (error) => {
