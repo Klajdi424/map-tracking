@@ -14,14 +14,23 @@
       const pickup = params.has("pickupLat") && params.has("pickupLng") ? [parseFloat(params.get("pickupLat")), parseFloat(params.get("pickupLng"))] : null;
       const dropoff = params.has("dropoffLat") && params.has("dropoffLng") ? [parseFloat(params.get("dropoffLat")), parseFloat(params.get("dropoffLng"))] : null;
 
-      map = L.map("map").setView(driver || pickup || dropoff, 15);
+      const bounds = [];
+      if (driver) bounds.push(driver);
+      if (pickup) bounds.push(pickup);
+      if (dropoff) bounds.push(dropoff);
+
+      map = L.map("map");
+      if (bounds.length > 0) {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      } else {
+        map.setView([51.505, -0.09], 15);
+      }
 
       // Apply OpenStreetMap base tile layer
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      // Apply the exact styles configuration you provided
       applyCustomMapStyle();
 
       if (pickup) L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map);
@@ -31,7 +40,7 @@
       }
 
       if (driver && pickup) {
-        getRoute(driver, pickup, "#8A2BE2", "driverToPickup"); // Following your styling exactly
+        getRoute(driver, pickup, "#8A2BE2", "driverToPickup");
       } else if (driver && dropoff) {
         getRoute(driver, dropoff, "#8A2BE2", "driverToDropoff");
       } else if (pickup && dropoff) {
@@ -42,7 +51,7 @@
     }
 
     function applyCustomMapStyle() {
-      document.querySelector("#map").style.filter = "brightness(0.8) contrast(1.2)";
+      document.querySelector("#map").style.backgroundColor = "black"; // Black background applied
     }
 
     function getRoute(start, end, color, key) {
@@ -67,7 +76,7 @@
       }
 
       if (dropoff) {
-        getRoute(newDriver, dropoff, "#8A2BE2", "driverToDropoff"); // Sticking to your styling
+        getRoute(newDriver, dropoff, "#8A2BE2", "driverToDropoff");
       } else if (pickup) {
         getRoute(newDriver, pickup, "#8A2BE2", "driverToPickup");
       }
@@ -82,7 +91,7 @@
   </script>
   <style>
     html, body { margin: 0; padding: 0; height: 100%; }
-    #map { height: 100%; width: 100%; filter: brightness(0.8) contrast(1.2); } /* Applied your requested map styling */
+    #map { height: 100%; width: 100%; background-color: black; } /* Black background applied */
   </style>
 </head>
 <body onload="initMap()">
