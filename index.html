@@ -26,7 +26,7 @@
         map.setView([51.505, -0.09], 15);
       }
 
-      // Apply Dark Basemap Tile Layer
+      // Apply a map layer with grey road text visibility
       L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
         attribution: '&copy; OpenStreetMap & CartoDB contributors'
       }).addTo(map);
@@ -76,9 +76,25 @@
           if (routeLayers[key]) {
             map.removeLayer(routeLayers[key]);
           }
-          routeLayers[key] = L.geoJSON(data.routes[0].geometry, {
+
+          const routeGeoJSON = data.routes[0].geometry;
+          const distanceKm = (data.routes[0].distance / 1000).toFixed(2); // Convert meters to km
+          const durationMin = Math.round(data.routes[0].duration / 60); // Convert seconds to minutes
+
+          routeLayers[key] = L.geoJSON(routeGeoJSON, {
             style: { color: color, weight: 6 }
           }).addTo(map);
+
+          // Find midpoint for label placement
+          const midpoint = routeGeoJSON.coordinates[Math.floor(routeGeoJSON.coordinates.length / 2)];
+          const midpointLatLng = [midpoint[1], midpoint[0]];
+
+          // Add tooltip showing distance & time
+          L.tooltip({
+            permanent: true,
+            direction: "top",
+            className: "route-label"
+          }).setContent(`🚗 ${distanceKm} km | ⏳ ${durationMin} min`).setLatLng(midpointLatLng).addTo(map);
         });
     }
 
@@ -114,6 +130,17 @@
       color: #b0b0b0; /* Grey */
       text-shadow: 2px 2px 4px #000000; /* Soft black shadow for better readability */
       font-weight: bold;
+    }
+
+    /* Route tooltip styling */
+    .route-label {
+      font-size: 14px;
+      color: #b0b0b0; /* Grey */
+      text-shadow: 2px 2px 4px #000000; /* Soft black shadow for better readability */
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.8); /* Semi-transparent black for contrast */
+      padding: 4px;
+      border-radius: 4px;
     }
   </style>
 </head>
