@@ -26,12 +26,10 @@
         map.setView([51.505, -0.09], 15);
       }
 
-      // Apply OpenStreetMap base tile layer
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap contributors'
+      // Apply Dark Basemap Tile Layer
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        attribution: '&copy; OpenStreetMap & CartoDB contributors'
       }).addTo(map);
-
-      applyCustomMapStyle();
 
       if (pickup) L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map);
       if (dropoff) L.marker(dropoff, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png") }).addTo(map);
@@ -48,10 +46,6 @@
       }
 
       setInterval(() => updateDriverLocation(pickup, dropoff), 2000);
-    }
-
-    function applyCustomMapStyle() {
-      document.querySelector("#map").style.backgroundColor = "black"; // Black background applied
     }
 
     function getRoute(start, end, color, key) {
@@ -91,7 +85,7 @@
   </script>
   <style>
     html, body { margin: 0; padding: 0; height: 100%; }
-    #map { height: 100%; width: 100%; background-color: black; } /* Black background applied */
+    #map { height: 100%; width: 100%; } /* No need for black background as dark tiles are applied */
   </style>
 </head>
 <body onload="initMap()">
