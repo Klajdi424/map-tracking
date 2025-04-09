@@ -69,6 +69,7 @@
           if (data.routes && data.routes.length > 0) {
             const route = data.routes[0].geometry.coordinates;
 
+            // Add route to the map
             map.addSource(`route-${Date.now()}`, {
               type: 'geojson',
               data: {
@@ -117,15 +118,23 @@
 
       const params = new URLSearchParams(window.location.search);
 
-      const driver = params.has("driverLat") && params.has("driverLng") 
-        ? [ parseFloat(params.get("driverLng")), parseFloat(params.get("driverLat")) ] // [lng, lat]
-        : null;
-      const pickup = params.has("pickupLat") && params.has("pickupLng") 
-        ? [ parseFloat(params.get("pickupLng")), parseFloat(params.get("pickupLat")) ] // [lng, lat]
-        : null;
-      const dropoff = params.has("dropoffLat") && params.has("dropoffLng") 
-        ? [ parseFloat(params.get("dropoffLng")), parseFloat(params.get("dropoffLat")) ] // [lng, lat]
-        : null;
+      // Extract parameters from URL
+      const driverLat = params.get("driverLat");
+      const driverLng = params.get("driverLng");
+      const pickupLat = params.get("pickupLat");
+      const pickupLng = params.get("pickupLng");
+      const dropoffLat = params.get("dropoffLat");
+      const dropoffLng = params.get("dropoffLng");
+
+      // Log parameters for debugging
+      console.log("Driver Location:", { driverLat, driverLng });
+      console.log("Pickup Location:", { pickupLat, pickupLng });
+      console.log("Dropoff Location:", { dropoffLat, dropoffLng });
+
+      // Ensure valid coordinates are parsed
+      const driver = driverLat && driverLng ? [ parseFloat(driverLng), parseFloat(driverLat) ] : null;
+      const pickup = pickupLat && pickupLng ? [ parseFloat(pickupLng), parseFloat(pickupLat) ] : null;
+      const dropoff = dropoffLat && dropoffLng ? [ parseFloat(dropoffLng), parseFloat(dropoffLat) ] : null;
 
       // Initialize MapLibre map
       map = new maplibregl.Map({
