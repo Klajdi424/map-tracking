@@ -73,14 +73,14 @@
             const rawCoordinates = data.routes[0].geometry.coordinates;
             console.log("Raw Route Coordinates:", rawCoordinates);
 
-            const route = rawCoordinates.map(coord => [coord[1], coord[0]]);
+            const route = rawCoordinates.map(coord => L.latLng(coord[1], coord[0]));
             console.log("Converted Route Coordinates:", route);
 
             const polyline = L.polyline(route, { color: color, weight: 6 }).addTo(map);
             console.log("Polyline Added:", polyline);
 
             const bounds = L.latLngBounds(route);
-            map.fitBounds(bounds, { padding: [50, 50] });
+            map.fitBounds(bounds, { padding: [20, 20] }); // Reduce padding for a closer zoom
           } else {
             console.error('No routes found in OSRM response!');
           }
@@ -122,7 +122,7 @@
 
       if (points.length > 0) {
         const bounds = L.latLngBounds(points);
-        map.fitBounds(bounds, { padding: [50, 50] });
+        map.fitBounds(bounds, { padding: [20, 20] });
         map.setZoom(map.getZoom() - 1); // Adjust zoom level to be closer
       }
 
