@@ -36,9 +36,6 @@
     const osrmBaseURL = "https://router.project-osrm.org/route/v1";
 
     let map;
-    let driverMarker;
-    let pickupMarker;
-    let dropoffMarker;
 
     function showLoading() {
       document.getElementById('loading').style.display = 'block';
@@ -72,19 +69,21 @@
           if (data.routes && data.routes.length > 0) {
             const route = data.routes[0].geometry.coordinates;
 
+            map.addSource(`route-${Date.now()}`, {
+              type: 'geojson',
+              data: {
+                type: 'Feature',
+                geometry: {
+                  type: 'LineString',
+                  coordinates: route
+                }
+              }
+            });
+
             map.addLayer({
               id: `route-${Date.now()}`,
               type: 'line',
-              source: {
-                type: 'geojson',
-                data: {
-                  type: 'Feature',
-                  geometry: {
-                    type: 'LineString',
-                    coordinates: route
-                  }
-                }
-              },
+              source: `route-${Date.now()}`,
               paint: {
                 'line-color': color,
                 'line-width': 6
