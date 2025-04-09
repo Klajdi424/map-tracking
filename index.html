@@ -32,30 +32,15 @@
       }).addTo(map);
 
       if (pickup) {
-        L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map)
-          .bindTooltip("Pickup Location", { 
-            permanent: true, 
-            direction: "top", 
-            className: "custom-label"
-          });
+        L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map);
       }
 
       if (dropoff) {
-        L.marker(dropoff, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png") }).addTo(map)
-          .bindTooltip("Dropoff Location", { 
-            permanent: true, 
-            direction: "top", 
-            className: "custom-label"
-          });
+        L.marker(dropoff, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png") }).addTo(map);
       }
 
       if (driver) {
-        driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map)
-          .bindTooltip("Driver", { 
-            permanent: true, 
-            direction: "top", 
-            className: "custom-label"
-          });
+        driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map);
       }
 
       if (driver && pickup) {
@@ -124,14 +109,6 @@
     html, body { margin: 0; padding: 0; height: 100%; }
     #map { height: 100%; width: 100%; }
     
-    /* Custom label styling */
-    .custom-label {
-      font-size: 16px;
-      color: #b0b0b0; /* Grey */
-      text-shadow: 2px 2px 4px #000000; /* Soft black shadow for better readability */
-      font-weight: bold;
-    }
-
     /* Route tooltip styling */
     .route-label {
       font-size: 14px;
