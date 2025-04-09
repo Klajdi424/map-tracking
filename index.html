@@ -1,153 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Map Tracking with Leaflet</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-    html, body { margin: 0; padding: 0; height: 100%; }
-    #map { height: 100%; width: 100%; }
-    #loading {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.8);
-      text-align: center;
-      z-index: 1000;
-    }
-    #loading p {
-      margin-top: 40%;
-      font-size: 20px;
-      color: #333;
-    }
-  </style>
-</head>
-<body>
-  <div id="loading">
-    <p>Loading...</p>
-  </div>
-  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
   <script>
-    const osrmBaseURL = "https://router.project-osrm.org/route/v1";
-
     let map;
+    let driverMarker;
+    let routeLayers = {};
 
-    function showLoading() {
-      document.getElementById('loading').style.display = 'block';
+    function initMap() {
+      const params = new URLSearchParams(window.location.search);
+      const driver = params.has("driverLat") && params.has("driverLng") ? [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))] : null;
+      const pickup = params.has("pickupLat") && params.has("pickupLng") ? [parseFloat(params.get("pickupLat")), parseFloat(params.get("pickupLng"))] : null;
+      const dropoff = params.has("dropoffLat") && params.has("dropoffLng") ? [parseFloat(params.get("dropoffLat")), parseFloat(params.get("dropoffLng"))] : null;
+
+      map = L.map("map").setView(driver || pickup || dropoff, 15);
+
+      // Apply OpenStreetMap base tile layer
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Apply the exact styles configuration you provided
+      applyCustomMapStyle();
+
+      if (pickup) L.marker(pickup, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png") }).addTo(map);
+      if (dropoff) L.marker(dropoff, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png") }).addTo(map);
+      if (driver) {
+        driverMarker = L.marker(driver, { icon: getIcon("https://raw.githubusercontent.com/Klajdi424/image/main/driver.png") }).addTo(map);
+      }
+
+      if (driver && pickup) {
+        getRoute(driver, pickup, "#8A2BE2", "driverToPickup"); // Following your styling exactly
+      } else if (driver && dropoff) {
+        getRoute(driver, dropoff, "#8A2BE2", "driverToDropoff");
+      } else if (pickup && dropoff) {
+        getRoute(pickup, dropoff, "#8A2BE2", "pickupToDropoff");
+      }
+
+      setInterval(() => updateDriverLocation(pickup, dropoff), 2000);
     }
 
-    function hideLoading() {
-      document.getElementById('loading').style.display = 'none';
+    function applyCustomMapStyle() {
+      document.querySelector("#map").style.filter = "brightness(0.8) contrast(1.2)";
     }
 
-    function addMarker(coords, iconUrl) {
-      const icon = L.icon({
-        iconUrl: iconUrl,
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-      });
-      L.marker(coords, { icon }).addTo(map);
-    }
-
-    function drawRoute(start, end, color = "purple") {
-      showLoading();
-
-      const url = `${osrmBaseURL}/driving/${start.join(',')};${end.join(',')}?geometries=geojson`;
-
-      console.log("OSRM API URL:", url);
-
-      fetch(url)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`OSRM API error: ${response.status}`);
-          }
-          return response.json();
-        })
+    function getRoute(start, end, color, key) {
+      fetch(`https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`)
+        .then(response => response.json())
         .then(data => {
-          console.log("OSRM API Response:", data);
-
-          if (data.routes && data.routes.length > 0) {
-            const rawCoordinates = data.routes[0].geometry.coordinates;
-            console.log("Raw Route Coordinates:", rawCoordinates);
-
-            const route = rawCoordinates.map(coord => L.latLng(coord[1], coord[0]));
-            console.log("Converted Route Coordinates:", route);
-
-            const polyline = L.polyline(route, { color: color, weight: 6 }).addTo(map);
-            console.log("Polyline Added:", polyline);
-
-            const bounds = L.latLngBounds(route);
-            map.fitBounds(bounds, { padding: [20, 20] }); // Reduce padding for a closer zoom
-          } else {
-            console.error('No routes found in OSRM response!');
+          if (routeLayers[key]) {
+            map.removeLayer(routeLayers[key]);
           }
-          hideLoading();
-        })
-        .catch(error => {
-          console.error('Error fetching route:', error);
-          hideLoading();
+          routeLayers[key] = L.geoJSON(data.routes[0].geometry, {
+            style: { color: color, weight: 6 }
+          }).addTo(map);
         });
     }
 
-    function initMap() {
-      showLoading();
-
+    function updateDriverLocation(pickup, dropoff) {
       const params = new URLSearchParams(window.location.search);
+      const newDriver = [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))];
 
-      const driverLat = params.get("driverLat");
-      const driverLng = params.get("driverLng");
-      const pickupLat = params.get("pickupLat");
-      const pickupLng = params.get("pickupLng");
-      const dropoffLat = params.get("dropoffLat");
-      const dropoffLng = params.get("dropoffLng");
-
-      console.log("Driver Location:", { driverLat, driverLng });
-      console.log("Pickup Location:", { pickupLat, pickupLng });
-      console.log("Dropoff Location:", { dropoffLat, dropoffLng });
-
-      const driver = driverLat && driverLng ? [parseFloat(driverLat), parseFloat(driverLng)] : null;
-      const pickup = pickupLat && pickupLng ? [parseFloat(pickupLat), parseFloat(pickupLng)] : null;
-      const dropoff = dropoffLat && dropoffLng ? [parseFloat(dropoffLat), parseFloat(dropoffLng)] : null;
-
-      map = L.map('map', { zoomAnimation: false }).setView([0, 0], 2);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map);
-
-      const points = [driver, pickup, dropoff].filter(Boolean);
-
-      if (points.length > 0) {
-        const bounds = L.latLngBounds(points);
-        map.fitBounds(bounds, { padding: [20, 20] });
-        map.setZoom(map.getZoom() - 1); // Adjust zoom level to be closer
+      if (driverMarker) {
+        driverMarker.setLatLng(newDriver);
       }
 
-      if (pickup) {
-        addMarker(pickup, "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png");
-      }
       if (dropoff) {
-        addMarker(dropoff, "https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png");
+        getRoute(newDriver, dropoff, "#8A2BE2", "driverToDropoff"); // Sticking to your styling
+      } else if (pickup) {
+        getRoute(newDriver, pickup, "#8A2BE2", "driverToPickup");
       }
-      if (driver) {
-        addMarker(driver, "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png");
-      }
-
-      if (driver && pickup && !dropoff) {
-        drawRoute(driver, pickup);
-      } else if (driver && dropoff && !pickup) {
-        drawRoute(driver, dropoff);
-      } else if (pickup && dropoff && !driver) {
-        drawRoute(pickup, dropoff);
-      }
-
-      hideLoading();
     }
 
-    document.addEventListener("DOMContentLoaded", initMap);
+    function getIcon(url) {
+      return L.icon({
+        iconUrl: url,
+        iconSize: [55, 55]
+      });
+    }
   </script>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; }
+    #map { height: 100%; width: 100%; filter: brightness(0.8) contrast(1.2); } /* Applied your requested map styling */
+  </style>
+</head>
+<body onload="initMap()">
+  <div id="map"></div>
 </body>
 </html>
