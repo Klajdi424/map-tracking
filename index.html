@@ -40,9 +40,6 @@
     let pickupMarker;
     let dropoffMarker;
 
-    const defaultCenter = [ -73.985428, 40.748817 ]; // New York City (lng, lat)
-    const defaultZoom = 13;
-
     function showLoading() {
       document.getElementById('loading').style.display = 'block';
     }
@@ -93,10 +90,6 @@
                 'line-width': 6
               }
             });
-
-            // Fit map to route bounds
-            const bounds = route.reduce((bounds, coord) => bounds.extend(coord), new maplibregl.LngLatBounds(route[0], route[0]));
-            map.fitBounds(bounds, { padding: 50 });
           } else {
             console.error('No routes found in OSRM response!');
           }
@@ -106,6 +99,18 @@
           console.error('Error fetching route:', error);
           hideLoading();
         });
+    }
+
+    function calculateBounds(points) {
+      const bounds = new maplibregl.LngLatBounds();
+
+      points.forEach(point => {
+        if (point) {
+          bounds.extend(point); // Extend bounds to include the point
+        }
+      });
+
+      return bounds;
     }
 
     function initMap() {
@@ -127,11 +132,19 @@
       map = new maplibregl.Map({
         container: 'map',
         style: `https://api.maptiler.com/maps/basic/style.json?key=${mapTilerKey}`,
-        center: defaultCenter,
-        zoom: defaultZoom
+        center: [0, 0], // Temporary center, will be adjusted to bounds
+        zoom: 2 // Temporary zoom, will be adjusted to bounds
       });
 
       map.on('load', () => {
+        const points = [driver, pickup, dropoff];
+        const bounds = calculateBounds(points);
+
+        // Adjust map to fit all points
+        if (!bounds.isEmpty()) {
+          map.fitBounds(bounds, { padding: 50 }); // Fit bounds with padding
+        }
+
         if (pickup) {
           addMarker(pickup, "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png");
         }
