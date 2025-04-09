@@ -65,7 +65,12 @@
       console.log("OSRM API URL:", url); // Debugging: Log the API URL
 
       fetch(`${url}?geometries=geojson`)
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`OSRM API error: ${response.status}`);
+          }
+          return response.json();
+        })
         .then(data => {
           console.log("OSRM API Response:", data); // Debugging: Log the full response
 
@@ -73,8 +78,7 @@
             const route = data.routes[0].geometry.coordinates;
 
             // Add route to the map
-            const sourceId = `route-${Date.now()}`;
-            map.addSource(sourceId, {
+            map.addSource(`route-${Date.now()}`, {
               type: 'geojson',
               data: {
                 type: 'Feature',
@@ -86,9 +90,9 @@
             });
 
             map.addLayer({
-              id: sourceId,
+              id: `route-${Date.now()}`,
               type: 'line',
-              source: sourceId,
+              source: `route-${Date.now()}`,
               paint: {
                 'line-color': color,
                 'line-width': 6
