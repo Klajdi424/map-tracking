@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Map Tracking with MapLibre</title>
-  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
-  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <title>Map Tracking with Leaflet</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     html, body { margin: 0; padding: 0; height: 100%; }
     #map { height: 100%; width: 100%; }
@@ -31,7 +31,6 @@
   </div>
   <div id="map"></div>
   <script>
-    const mapTilerKey = "wuowj3548V0ifhTTUk18"; // Replace with your MapTiler API key
     const osrmBaseURL = "https://router.project-osrm.org/route/v1";
 
     let map;
@@ -45,16 +44,12 @@
     }
 
     function addMarker(coords, iconUrl) {
-      const el = document.createElement('div');
-      el.style.backgroundImage = `url(${iconUrl})`;
-      el.style.width = '40px';
-      el.style.height = '40px';
-      el.style.backgroundSize = 'contain';
-      el.style.backgroundRepeat = 'no-repeat';
-
-      new maplibregl.Marker(el)
-        .setLngLat(coords)
-        .addTo(map);
+      const icon = L.icon({
+        iconUrl: iconUrl,
+        iconSize: [40, 40], // size of the icon
+        iconAnchor: [20, 40], // point of the icon which will correspond to marker's location
+      });
+      L.marker(coords, { icon }).addTo(map);
     }
 
     function drawRoute(start, end, color) {
@@ -75,29 +70,14 @@
           console.log("OSRM API Response:", data); // Debugging: Log the full response
 
           if (data.routes && data.routes.length > 0) {
-            const route = data.routes[0].geometry.coordinates;
+            const route = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]); // Convert [lng, lat] to [lat, lng]
 
-            // Add route to the map
-            map.addSource(`route-${Date.now()}`, {
-              type: 'geojson',
-              data: {
-                type: 'Feature',
-                geometry: {
-                  type: 'LineString',
-                  coordinates: route
-                }
-              }
-            });
+            // Add the polyline to the map
+            L.polyline(route, { color, weight: 6 }).addTo(map);
 
-            map.addLayer({
-              id: `route-${Date.now()}`,
-              type: 'line',
-              source: `route-${Date.now()}`,
-              paint: {
-                'line-color': color,
-                'line-width': 6
-              }
-            });
+            // Fit the map bounds to the route
+            const bounds = L.latLngBounds(route);
+            map.fitBounds(bounds, { padding: [50, 50] });
           } else {
             console.error('No routes found in OSRM response!');
           }
@@ -107,18 +87,6 @@
           console.error('Error fetching route:', error);
           hideLoading();
         });
-    }
-
-    function calculateBounds(points) {
-      const bounds = new maplibregl.LngLatBounds();
-
-      points.forEach(point => {
-        if (point) {
-          bounds.extend(point); // Extend bounds to include the point
-        }
-      });
-
-      return bounds;
     }
 
     function initMap() {
@@ -140,48 +108,44 @@
       console.log("Dropoff Location:", { dropoffLat, dropoffLng });
 
       // Ensure valid coordinates are parsed
-      const driver = driverLat && driverLng ? [ parseFloat(driverLng), parseFloat(driverLat) ] : null;
-      const pickup = pickupLat && pickupLng ? [ parseFloat(pickupLng), parseFloat(pickupLat) ] : null;
-      const dropoff = dropoffLat && dropoffLng ? [ parseFloat(dropoffLng), parseFloat(dropoffLat) ] : null;
+      const driver = driverLat && driverLng ? [ parseFloat(driverLat), parseFloat(driverLng) ] : null;
+      const pickup = pickupLat && pickupLng ? [ parseFloat(pickupLat), parseFloat(pickupLng) ] : null;
+      const dropoff = dropoffLat && dropoffLng ? [ parseFloat(dropoffLat), parseFloat(dropoffLng) ] : null;
 
-      // Initialize MapLibre map
-      map = new maplibregl.Map({
-        container: 'map',
-        style: `https://api.maptiler.com/maps/basic/style.json?key=${mapTilerKey}`,
-        center: [0, 0], // Temporary center, will be adjusted to bounds
-        zoom: 2, // Temporary zoom, will be adjusted to bounds
-        interactive: true
-      });
+      // Initialize Leaflet map
+      map = L.map('map').setView([0, 0], 2); // Temporary center and zoom level
 
-      map.on('load', () => {
-        const points = [driver, pickup, dropoff];
-        const bounds = calculateBounds(points);
+      // Add OSM tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
 
-        // Adjust map to fit all points
-        if (!bounds.isEmpty()) {
-          map.fitBounds(bounds, { padding: 50, animate: false }); // Fit bounds without animation
-        }
+      const points = [driver, pickup, dropoff].filter(Boolean);
 
-        if (pickup) {
-          addMarker(pickup, "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png");
-        }
-        if (dropoff) {
-          addMarker(dropoff, "https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png");
-        }
-        if (driver) {
-          addMarker(driver, "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png");
-        }
+      if (points.length > 0) {
+        const bounds = L.latLngBounds(points);
+        map.fitBounds(bounds, { padding: [50, 50] }); // Fit map to markers
+      }
 
-        if (driver && pickup && !dropoff) {
-          drawRoute(driver, pickup, "purple");
-        } else if (driver && dropoff && !pickup) {
-          drawRoute(driver, dropoff, "purple");
-        } else if (pickup && dropoff && !driver) {
-          drawRoute(pickup, dropoff, "purple");
-        }
+      if (pickup) {
+        addMarker(pickup, "https://raw.githubusercontent.com/Klajdi424/image/main/pickup2.png");
+      }
+      if (dropoff) {
+        addMarker(dropoff, "https://raw.githubusercontent.com/Klajdi424/image/main/nobackround.png");
+      }
+      if (driver) {
+        addMarker(driver, "https://raw.githubusercontent.com/Klajdi424/image/main/driver.png");
+      }
 
-        hideLoading();
-      });
+      if (driver && pickup && !dropoff) {
+        drawRoute(driver, pickup, "purple");
+      } else if (driver && dropoff && !pickup) {
+        drawRoute(driver, dropoff, "purple");
+      } else if (pickup && dropoff && !driver) {
+        drawRoute(pickup, dropoff, "purple");
+      }
+
+      hideLoading();
     }
 
     document.addEventListener("DOMContentLoaded", initMap);
