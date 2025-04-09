@@ -52,7 +52,7 @@
       L.marker(coords, { icon }).addTo(map);
     }
 
-    function drawRoute(start, end, color) {
+    function drawRoute(start, end, color = "purple") {
       showLoading();
 
       // OSRM Routing API
@@ -73,9 +73,10 @@
             const route = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]); // Convert [lng, lat] to [lat, lng]
 
             console.log("Route Coordinates:", route); // Debugging: Log the route coordinates
+            console.log("Route Color:", color); // Debugging: Confirm the color being used
 
             // Add the polyline to the map
-            const polyline = L.polyline(route, { color, weight: 6 }).addTo(map);
+            const polyline = L.polyline(route, { color: color, weight: 6 }).addTo(map);
             console.log("Polyline Added:", polyline); // Debugging: Confirm the polyline is added
 
             // Fit the map bounds to the route
@@ -141,11 +142,11 @@
       }
 
       if (driver && pickup && !dropoff) {
-        drawRoute(driver, pickup, "purple");
+        drawRoute(driver, pickup);
       } else if (driver && dropoff && !pickup) {
-        drawRoute(driver, dropoff, "purple");
+        drawRoute(driver, dropoff);
       } else if (pickup && dropoff && !driver) {
-        drawRoute(pickup, dropoff, "purple");
+        drawRoute(pickup, dropoff);
       }
 
       hideLoading();
