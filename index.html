@@ -88,33 +88,12 @@
       const newDriver = [parseFloat(params.get("driverLat")), parseFloat(params.get("driverLng"))];
 
       if (driverMarker) {
-        let currentPos = driverMarker.getLatLng();
-        let newPos = L.latLng(newDriver);
-
-        let duration = 2000; // Smooth transition over 2 seconds
-        let step = 50; // Number of frames in transition
-        let interval = duration / step;
-        let i = 0;
-
-        let moveDriver = setInterval(() => {
-          let lat = currentPos.lat + (newPos.lat - currentPos.lat) * (i / step);
-          let lng = currentPos.lng + (newPos.lng - currentPos.lng) * (i / step);
-          driverMarker.setLatLng([lat, lng]);
-
-          i++;
-          if (i > step) clearInterval(moveDriver);
-        }, interval);
+        driverMarker.setLatLng(newDriver);
       }
 
       if (dropoff) {
-        if (routeLayers["driverToDropoff"]) {
-          map.removeLayer(routeLayers["driverToDropoff"]);
-        }
         getRoute(newDriver, dropoff, "#8A2BE2", "driverToDropoff");
       } else if (pickup) {
-        if (routeLayers["driverToPickup"]) {
-          map.removeLayer(routeLayers["driverToPickup"]);
-        }
         getRoute(newDriver, pickup, "#8A2BE2", "driverToPickup");
       }
     }
